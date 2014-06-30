@@ -20,6 +20,3 @@ iv. getTypesFromBaker()
 v. newcheckVariableDeclaration()
 	Improving checkVariableDeclaration.
 
-	       findMethodDeclaration()
-               getTypesFromBaker()
-	       newcheckVariableDeclaration()
