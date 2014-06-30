@@ -1,0 +1,15 @@
+		RiWordnet wordnet = new RiWordnet(null);
+
+		String pos;
+	
+		List<String> listStart = FindSubstring(wordnet, start);
+		List<String> listEnd = FindSubstring(wordnet, end);
+		List<Float> distance = new ArrayList<Float>();
+		for(String s:listStart)
+			for(String e:listEnd){
+				pos = wordnet.getBestPos(s);
+				float dist = 1- wordnet.getDistance(s,e,pos);
+				distance.add(dist);
+				//System.out.println(s + " and " + e + " are related by a distance of: " + (dist));
+			}
+		return Collections.max(distance);
