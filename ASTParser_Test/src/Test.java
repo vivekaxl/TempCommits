@@ -109,6 +109,7 @@ public class Test {
 				+ " int a;\n "
 				+ "int b;\n "
 				+ "int c;\n"
+				+ "int test;\n"
 				+ "void add(int a,int b){\n "
 				+ "int tex;\n "
 				+ "float test;\n"
@@ -121,14 +122,18 @@ public class Test {
 				+ "}";
 		final ASTNode root = parseStatements(source);
 		System.out.println("----------------------------------");
-		List<ASTNode> listMethodDeclaration = getDescendants(root,node -> node.getNodeType() == ASTNode.VARIABLE_DECLARATION_FRAGMENT ).collect(Collectors.toList());
-		System.out.println(listMethodDeclaration);
-		Iterator itr = listMethodDeclaration.iterator();
-	    while(itr.hasNext()) {
-	    	ASTNode temp = (ASTNode) itr.next();
-	    	//List<ASTNode> listScopeVariable = getDescendants(temp,node -> node.getNodeType() == ASTNode.VARIABLE_DECLARATION_FRAGMENT).collect(Collectors.toList());
-			//System.out.println(listScopeVariable);
-	    	System.out.println(temp.getParent().getNodeType());
+		List<ASTNode> listVariableDeclaration = getDescendants(root,node -> node.getNodeType() == ASTNode.VARIABLE_DECLARATION_FRAGMENT ).collect(Collectors.toList());
+		List<ASTNode> listMethodDeclaration = getDescendants(root,node -> node.getNodeType() == ASTNode.METHOD_DECLARATION ).collect(Collectors.toList());
+		listMethodDeclaration.stream().map(node->node.toString()).forEach( e->System.out.println(e));
+		Iterator itrM = listMethodDeclaration.iterator();
+	    while(itrM.hasNext()) {
+	    	ASTNode temp = (ASTNode) itrM.next();
+	    	List<ASTNode> listScopeVariable = getDescendants(temp,node -> node.getNodeType() == ASTNode.VARIABLE_DECLARATION_FRAGMENT).collect(Collectors.toList());
+	    	System.out.println("Declared inside the method");
+			System.out.println(listScopeVariable);
+			System.out.println("Declared inside the class");
+			System.out.println(listVariableDeclaration.stream().filter(node->node.getParent().getNodeType() == 23).collect(Collectors.toList()));
+			System.out.println();
 	    }
 		
 	}
@@ -190,9 +195,6 @@ public class Test {
 			e1.printStackTrace();
 		}
 		
-		System.out.println(readBack.substring(85, 100));
-		System.out.println(readBack.substring(98, 110));
-		System.out.println(readBack.substring(154, 170));
 		
 		ProcessBuilder p=new ProcessBuilder("curl", "--data-urlencode","pastedcode@temp.txt", "http://gadget.cs.uwaterloo.ca:2145/snippet/getapijsonfromcode.php");
 		try {
@@ -209,6 +211,10 @@ public class Test {
 		test.insertData(temp);
 		test.printData();
 	}
+	
+	/*
+	 * Doesn't work correctly. Changing it!
+	 */
 	static void newcheckVariableDeclaration(){
 //		String source = "	RiWordnet wordnet = new RiWordnet(null);\n"
 //				+ "\n"
@@ -239,6 +245,6 @@ public class Test {
 		
 	}
 	public static void main(String args[]){
-		newcheckVariableDeclaration();
+		getVariables();
 	}
 }

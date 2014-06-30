@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse_rcp/plugins/org.eclipse.jdt.core_3.9.50.v20140317-1741.jar" sourcepath="/home/vivek/eclipse_rcp/plugins/org.eclipse.jdt.core_3.9.50.v20140317-1741.jar">
+		<accessrules>
+			<accessrule kind="accessible" pattern="org/eclipse/jdt/core/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/jdt/core/compiler/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/jdt/core/compiler/batch/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/jdt/core/dom/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/jdt/core/dom/rewrite/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/jdt/core/eval/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/jdt/core/formatter/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/jdt/core/jdom/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/jdt/core/search/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/jdt/core/util/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/jdt/core/index/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/codeassist/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/codeassist/complete/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/codeassist/impl/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/codeassist/select/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/ast/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/batch/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/classfmt/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/codegen/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/env/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/flow/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/impl/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/lookup/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/parser/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/parser/diagnose/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/problem/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/util/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/builder/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/dom/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/dom/rewrite/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/eval/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/hierarchy/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/index/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/jdom/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/search/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/search/indexing/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/search/matching/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/search/processing/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/core/util/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/eval/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/formatter/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/formatter/align/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/formatter/comment/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/formatter/old/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/apt/dispatch/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/apt/model/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/apt/util/*"/>
+			<accessrule kind="accessible" pattern="META-INF/services/*"/>
+			<accessrule kind="discouraged" pattern="org/eclipse/jdt/internal/compiler/tool/*"/>
+			<accessrule ignoreifbetter="true" kind="nonaccessible" pattern="**/*"/>
+		</accessrules>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-8-oracle"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/commons-collections-3.2.1.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/commons-configuration-1.6.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/commons-lang-2.5.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/org.eclipse.core.contenttype_3.4.1.R35x_v20090826-0451.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/org.eclipse.core.jobs_3.4.100.v20090429-1800.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/org.eclipse.core.resources_3.5.2.R35x_v20091203-1235.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/org.eclipse.core.runtime_3.5.0.v20090525.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/org.eclipse.equinox.common_3.5.1.R35x_v20090807-1100.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/org.eclipse.equinox.preferences_3.2.301.R35x_v20091117.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/org.eclipse.jdt.core_3.5.2.v_981_R35x.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/org.eclipse.osgi_3.5.2.R35x_v20100126.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
