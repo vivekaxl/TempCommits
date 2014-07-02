@@ -13,6 +13,7 @@ class NodeCollectionVisitor extends ASTVisitor {
 			this.condition = condition;
 		}
 		public void preVisit(ASTNode node) {
+			System.out.println(node.toString());
 			if(condition.test(node))
 				nodes.add(node);
 		}
