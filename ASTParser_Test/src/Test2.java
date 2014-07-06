@@ -35,8 +35,11 @@ import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
@@ -44,7 +47,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
 
 public class Test2 {
-	protected ASTNode parseStatements(String source) {
+	protected static ASTNode parseStatements(String source) {
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setKind(ASTParser.K_STATEMENTS);
 		parser.setSource(source.toCharArray());
@@ -65,14 +68,14 @@ public class Test2 {
         parser.setUnitName("any_name");
         final CompilationUnit cu = (CompilationUnit) parser.createAST(null);
         
-        //Prints all the Compilation Errors
-        IProblem[] problems = cu.getProblems();
-        if (problems != null && problems.length > 0) {
-           System.out.println("Got problems compiling the source file: "+ problems.length);
-            for (IProblem problem : problems) {
-                System.out.println(problem);
-            }
-        }
+//        //Prints all the Compilation Errors
+//        IProblem[] problems = cu.getProblems();
+//        if (problems != null && problems.length > 0) {
+//           System.out.println("Got problems compiling the source file: "+ problems.length);
+//            for (IProblem problem : problems) {
+//                System.out.println(problem);
+//            }
+//        }
 		return cu;
 
 	}
@@ -81,68 +84,7 @@ public class Test2 {
 		root.accept(visitor);
 		return visitor.nodes.stream();
 	}
-	static void checkVariableDeclaration(){
-		String source = "	RiWordnet wordnet = new RiWordnet(null);\n"
-				+ "\n"
-				+ "	String pos;\n\nList<String> listStart = FindSubstring(wordnet,start);\n"
-				+ "	List<String> listEnd = FindSubstring(wordnet, end);\n "
-				+ "	List<Float> distance = new ArrayList<Float>();\n "
-				+ "	for(String s:listStart)\n"
-				+ "		for(String e:listEnd){\n"
-				+ "			pos = wordnet.getBestPos(s);\n"
-				+ "			float dist = 1- wordnet.getDistance(s,e,pos);\n"
-				+ "			distance.add(dist);\n"
-				+ "		}\n"
-				+ "	return Collections.max(distance);";
-	final ASTNode root = parseStatements(source);
-	System.out.println("----------------------------------");
-	List<String> listVariableName = new ArrayList<String>();;
-	List<ASTNode> listExpression = getDescendants(root,node -> node.getNodeType() == ASTNode.EXPRESSION_STATEMENT  ).collect(Collectors.toList());
-	//System.out.println(listExpression);
-    Iterator itr = listExpression.iterator();
-    while(itr.hasNext()) {
-    	ASTNode temp = (ASTNode) itr.next();
-    	List<String> tempListSimplename = getDescendants(temp,node -> node.getNodeType() == ASTNode.SIMPLE_NAME).map(s->s.toString()).collect(Collectors.toList());
-    	//System.out.println(tempListSimplename);
-    	listVariableName.addAll(tempListSimplename);
-
-    }
-    
-    System.out.println("listVariableName");
-    System.out.println(listVariableName);
-    List<String> listVariableDec = getDescendants(root,node -> node.getNodeType() == ASTNode.VARIABLE_DECLARATION_FRAGMENT  ).map(s->s.toString()).collect(Collectors.toList());
-    System.out.println("listVariableDec");
-	System.out.println(listVariableDec);
-	
-	if(listVariableDec.containsAll(listVariableName))
-		System.out.println("All variable declared");
-	else
-		System.out.println("Variables not declared");
-	}
-	
-	public static void findMethodDeclaration(){
-		String source = "class abc{\n"
-				+ " int a;\n "
-				+ "int b;\n "
-				+ "void add(int a,int b){\n "
-				+ "return(a+b);\n"
-				+ "}\n "
-				+ "public static void main(String args[]){\n"
-				+ " add(1,2);\n"
-				+ "}\n"
-				+ "}";
-		final ASTNode root = parseStatements(source);
-		System.out.println("----------------------------------");
-		List<ASTNode> listMethodDeclaration = getDescendants(root,node -> node.getNodeType() == ASTNode.METHOD_DECLARATION ).collect(Collectors.toList());
-		Iterator itr = listMethodDeclaration.iterator();
-	    while(itr.hasNext()) {
-	    	ASTNode temp = (ASTNode) itr.next();
-	    	System.out.println(temp.getStartPosition());
-	    	System.out.println(temp.getLength());
-	    	System.out.println(source.substring(temp.getStartPosition(), temp.getStartPosition()+temp.getLength()));
-	    }
-	}
-	public static void getVariables(){
+public static void getVariables(){
 		String source = "class abc{\n"
 				+ " int a;\n "
 				+ "int b;\n "
@@ -206,34 +148,31 @@ public class Test2 {
 	
 	public static void getTypesFromBaker() throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
 		String response = null;
-		String source = "	RiWordnet wordnet = new RiWordnet(null);\n"
-				+ "\n"
-				+ "	String pos;\n"
-				+ "\n"
-				+ "List<String> listStart = FindSubstring(wordnet,start);\n"
-				+ "	List<String> listEnd = FindSubstring(wordnet, end);\n "
-				+ "	List<Float> distance = new ArrayList<Float>();\n "
-				+ "	for(String s:listStart)\n"
-				+ "		for(String e:listEnd){\n"
-				+ "			pos = wordnet.getBestPos(s);\n"
-				+ "			dist = 1- wordnet.getDistance(s,e,pos);\n"
-				+ "			distance.add(dist);\n"
-				+ "		}\n"
-				+ "	return Collections.max(distance);";
+//		String source = "	RiWordnet wordnet = new RiWordnet(null);\n"
+//				+ "\n"
+//				+ "	String pos;\n"
+//				+ "\n"
+//				+ "List<String> listStart = FindSubstring(wordnet,start);\n"
+//				+ "	List<String> listEnd = FindSubstring(wordnet, end);\n "
+//				+ "	List<Float> distance = new ArrayList<Float>();\n "
+//				+ "	for(String s:listStart)\n"
+//				+ "		for(String e:listEnd){\n"
+//				+ "			pos = wordnet.getBestPos(s);\n"
+//				+ "			dist = 1- wordnet.getDistance(s,e,pos);\n"
+//				+ "			distance.add(dist);\n"
+//				+ "		}\n"
+//				+ "	return Collections.max(distance);";
+		String source = "if(cn == null){"
+				+ "String driver = \"com.mysql.jdbc.Driver\"; "
+				+ "Class.forName(driver); "
+				+ "dbHost = \"jdbc:mysql://\"+dbHost;"
+				+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);";
 		PrintWriter writer = new PrintWriter("temp.txt", "UTF-8");
 		writer.println(source);
 		writer.flush();
 		writer.close();
 		
-		String readBack = null ;
-		try {
-			readBack = readFile("temp.txt",StandardCharsets.UTF_8);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		
+	
 		ProcessBuilder p=new ProcessBuilder("curl", "--data-urlencode","pastedcode@temp.txt", "http://gadget.cs.uwaterloo.ca:2145/snippet/getapijsonfromcode.php");
 		try {
 			final Process shell = p.start();
@@ -281,7 +220,7 @@ public class Test2 {
 /*
  * Prints all the undeclared variables
  */
-	static void newcheckVariableDeclaration(){
+	static void checkVariableDeclaration(){
 		String source ="package javaproject;" // package for all classes
 	            + "class Dummy {"
 	            + "int j;" //
@@ -292,7 +231,7 @@ public class Test2 {
 	            + "   }" //
 	            + "}"; 
 
-		final CompilationUnit root = parseStatements(source);
+		final CompilationUnit root = parseStatementsCompilationUnit(source);
 		root.accept(new ASTVisitor() {
             public boolean visit(SimpleName node) {
             	if(node.resolveBinding() == null){
@@ -305,8 +244,117 @@ public class Test2 {
             }
 		});        
 	}
-	public static void main(String args[]){
-		//newcheckVariableDeclaration();
-		getVariableTypeFromDeclaration();
+	
+	public static void findMethodDeclaration(){
+		String source = "class abc{\n"
+				+ " int a;\n "
+				+ "int b;\n "
+				+ "void add(int a,int b){\n "
+				+ "return(a+b);\n"
+				+ "}\n "
+				+ "public static void main(String args[]){\n"
+				+ " add(1,2);\n"
+				+ "}\n"
+				+ "}";
+
+		final ASTNode root = parseStatements(source);
+		List<ASTNode> listMethodDeclaration = getDescendants(root,node -> node.getNodeType() == ASTNode.METHOD_DECLARATION ).collect(Collectors.toList());
+		Iterator itr = listMethodDeclaration.iterator();
+	    while(itr.hasNext()) {
+	    	System.out.println();
+	    	ASTNode temp = (ASTNode) itr.next();
+	    	System.out.print("Name of the declared method : ");
+	    	System.out.println(((MethodDeclaration)temp).getName());
+//	    	System.out.println(temp.getStartPosition());
+//	    	System.out.println(temp.getLength());
+	    	System.out.println("Body of Method Declartion : ");
+	    	System.out.println(source.substring(temp.getStartPosition(), temp.getStartPosition()+temp.getLength()));
+	    }
+	}
+
+	static void enclosedClasses(){
+//		String source ="package javaproject;\n" // package for all classes
+//	            + "class Dummy {\n"
+//	            + "int j;\n" //
+//	            + "   public int add(){\n"
+//	            + "int x=0,y=0;\n"
+//	            + "return(x+y);\n"
+//	            + "   }\n" //
+//	            + "}\n"; 
+		
+//		String source ="   public int add(){\n"
+//	            + "int x=0,y=0;\n"
+//	            + "return(x+y);\n"
+//	            + "   }\n";
+
+		String source ="int x=0,y=0;\n"
+        + "return(x+y)\n";
+
+		final CompilationUnit root = parseStatementsCompilationUnit(source);
+		List<MethodDeclaration> listMethodDeclaration = new ArrayList();
+		root.accept(new ASTVisitor() {
+            public boolean visit(MethodDeclaration node) {
+            		listMethodDeclaration.add(node);
+            		return true;
+            	}
+			});
+		
+		//Adding a class around the snippet
+		if(root.getProblems() != null){
+			System.out.println("Compilation Problems second");
+			String source_second = "class Test{\n" + source + "}\n";
+			final CompilationUnit root_second = parseStatementsCompilationUnit(source_second);
+			root_second.accept(new ASTVisitor() {
+	            public boolean visit(MethodDeclaration node) {
+	            		listMethodDeclaration.add(node);
+	            		return true;
+	            	}
+				});
+		}
+		
+		//Adding Method and class around the snippet
+		if(root.getProblems() != null){
+			System.out.println("Compilation Problems third");
+			String source_third = "class SmartCopyTestClass{\n" +"void SmartCopytestClass(){\n"+ source + "}\n" +"}\n";
+			final CompilationUnit root_second = parseStatementsCompilationUnit(source_third);
+			root_second.accept(new ASTVisitor() {
+	            public boolean visit(MethodDeclaration node) {
+	            		listMethodDeclaration.add(node);
+	            		return true;
+	            	}
+				});
+		}
+		
+		if(root.getProblems() != null){
+			System.out.println("snippet has errors");
+		}
+		
+			Iterator itr = listMethodDeclaration.iterator();
+			while(itr.hasNext()){
+				MethodDeclaration temp = (MethodDeclaration) itr.next();
+		   		 IMethodBinding binding = temp.resolveBinding();
+		          if (binding != null) {
+	          		  System.out.println("Method declared is :: ( "+temp.getName()+" ) at line"+ root.getLineNumber(temp.getStartPosition()));
+		              ITypeBinding type = binding.getDeclaringClass();
+		              if (type != null) {
+		                  System.out.println("Class in which method is declared is : " + type.getName());
+		              }
+		          }
+			}
+			
+//		}
+		
+
+
+
+	}
+	
+	
+	public static void main(String args[]) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+		checkVariableDeclaration();
+//		getVariableTypeFromDeclaration();
+	//enclosedClasses();
+		//findMethodDeclaration();
+		//getVariables();
 	}
 }
