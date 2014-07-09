@@ -7,8 +7,10 @@ import java.util.regex.Pattern;
 
 public class DataCollector {
 	List<DataCollectorSchema> listClasses;
-	public DataCollector() {
+	String InputString;
+	public DataCollector(String Input) {
 		listClasses = new ArrayList<DataCollectorSchema>();
+		InputString = Input;
 	}
 	public void insertData(String input){
 		outerparser(input);
@@ -23,10 +25,11 @@ public class DataCollector {
 			System.out.println("Line Number: "+temp.lineNumber);
 			System.out.println("Type: " + temp.type);
 			System.out.println("Elements: ");
-//			for(String str:temp.elements){
-//				System.out.println(str);
-//			}
+			for(String str:temp.elements){
+				System.out.println(str);
+			}
 			System.out.println("Character :" + temp.character);
+			System.out.println(InputString.substring(temp.character, temp.character+10));
 			System.out.println();
 		}
 	}
@@ -56,7 +59,7 @@ public class DataCollector {
 		p = Pattern.compile("\\\"name\": \"([^}]*)\\\"line_number\"");
 		m = p.matcher(temp);
 		while (m.find()) {
-			 returnValue.name = m.group(1).replace(" ","").replace("\n", "");
+			 returnValue.name = m.group(1).replace(" ","").replace("\n", "").replace("\"", "").replace(",","");
 			}
 		
 		p = Pattern.compile("\\\"line_number\": \"([^}]*)\\\"type\"");

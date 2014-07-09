@@ -8,6 +8,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,19 +35,26 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
+import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
 
 
 public class Test2 {
+	static boolean containsMethod;
+	static boolean containsClass;
+	
 	protected static ASTNode parseStatements(String source) {
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setKind(ASTParser.K_STATEMENTS);
@@ -146,7 +154,7 @@ public static void getVariables(){
 			  return new String(encoded, encoding);
 			}
 	
-	public static void getTypesFromBaker() throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+	public static DataCollector getTypesFromBaker(String source) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
 		String response = null;
 //		String source = "	RiWordnet wordnet = new RiWordnet(null);\n"
 //				+ "\n"
@@ -162,11 +170,12 @@ public static void getVariables(){
 //				+ "			distance.add(dist);\n"
 //				+ "		}\n"
 //				+ "	return Collections.max(distance);";
-		String source = "if(cn == null){"
-				+ "String driver = \"com.mysql.jdbc.Driver\"; "
-				+ "Class.forName(driver); "
-				+ "dbHost = \"jdbc:mysql://\"+dbHost;"
-				+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);";
+//		String source = "if(cn == null){\n"
+//				+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
+//				+ "Class.forName(driver); \n"
+//				+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
+//				+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
+//				+ "System.out.println(\"test\");\n";
 		PrintWriter writer = new PrintWriter("temp.txt", "UTF-8");
 		writer.println(source);
 		writer.flush();
@@ -175,18 +184,23 @@ public static void getVariables(){
 	
 		ProcessBuilder p=new ProcessBuilder("curl", "--data-urlencode","pastedcode@temp.txt", "http://gadget.cs.uwaterloo.ca:2145/snippet/getapijsonfromcode.php");
 		try {
+			System.out.println("Baker Start");
 			final Process shell = p.start();
 			InputStream shellIn = shell.getInputStream();
-			int shellExitStatus = shell.waitFor();			 
+			int shellExitStatus = shell.waitFor();
+			System.out.println(shellExitStatus);
 			response = convertStreamToStr(shellIn);
 			shellIn.close();
-		} catch (IOException e) {
+			System.out.println("Processed finished with status: " + shellExitStatus);
+		} catch(Exception e){
+			System.out.println(" getTypesFromBaker didn't work");
 			e.printStackTrace();
 		}
 		String temp = response.substring(25, response.length()-3);
-		DataCollector test = new DataCollector();
+		DataCollector test = new DataCollector(source);
 		test.insertData(temp);
 		test.printData();
+		return test;
 	}
 	
 	static void getVariableTypeFromDeclaration(){
@@ -220,29 +234,42 @@ public static void getVariables(){
 /*
  * Prints all the undeclared variables
  */
-	static void checkVariableDeclaration(){
-		String source ="package javaproject;" // package for all classes
-	            + "class Dummy {"
-	            + "int j;" //
-	            + "   public void add(){"
-	            + "int x=0,y=0;"
-	            + "j=x+y;\n"
-	            + "System.out.println(z);" //
-	            + "   }" //
-	            + "}"; 
-
+	static List<String> checkVariableDeclaration(String source){
+//		String source ="package javaproject;" // package for all classes
+//	            + "class Dummy {"
+//	            + "int j;" //
+//	            + "   public void add(){"
+//	            + "int x=0,y=0;"
+//	            + "j=x+y;\n"
+//	            + "System.out.println(z);" //
+//	            + "   }" //
+//	            + "}"; 
+//		String source = "if(cn == null){\n"
+//				+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
+//				+ "Class.forName(driver); \n"
+//				+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
+//				+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
+//				+ "System.out.println(\"test\");\n";
+		List<String> undeclaredVariables = new ArrayList();
+		System.out.println(source);
 		final CompilationUnit root = parseStatementsCompilationUnit(source);
 		root.accept(new ASTVisitor() {
             public boolean visit(SimpleName node) {
             	if(node.resolveBinding() == null){
-            		System.out.println(node.toString()+" is not declared");
+            		if(undeclaredVariables.contains(node.toString())== false ){
+            			System.out.println(node.toString()+" is not declared");
+            			undeclaredVariables.add(node.toString());
+            		}
+            		
             	}
 //            	else{
 //            		System.out.println(node.toString() + " is declared");
 //            	}
             	return true;
             }
-		});        
+		});  
+		
+		return undeclaredVariables;
 	}
 	
 	public static void findMethodDeclaration(){
@@ -272,7 +299,7 @@ public static void getVariables(){
 	    }
 	}
 
-	static void enclosedClasses(){
+	static String enclosedClasses(String source){
 //		String source ="package javaproject;\n" // package for all classes
 //	            + "class Dummy {\n"
 //	            + "int j;\n" //
@@ -287,47 +314,70 @@ public static void getVariables(){
 //	            + "return(x+y);\n"
 //	            + "   }\n";
 
-		String source ="int x=0,y=0;\n"
-        + "return(x+y)\n";
+//		String source ="int x=0,y=0;\n"
+//        + "return(x+y);\n";
+
+		
+		/*
+		 * Can use type declaration and methodDeclaration to find if the snippet is enclosed in class and a method. 
+		 */
 
 		final CompilationUnit root = parseStatementsCompilationUnit(source);
-		List<MethodDeclaration> listMethodDeclaration = new ArrayList();
+		List<MethodDeclaration> listMethodDeclaration = new ArrayList<MethodDeclaration>();
 		root.accept(new ASTVisitor() {
             public boolean visit(MethodDeclaration node) {
             		listMethodDeclaration.add(node);
             		return true;
             	}
+            public boolean visit(TypeDeclaration node) {
+        		//System.out.println("TD1");
+        		return true;
+        	}
 			});
 		
 		//Adding a class around the snippet
-		if(root.getProblems() != null){
-			System.out.println("Compilation Problems second");
+		if(root.getProblems() != null && root.getProblems().length >0){
+			//System.out.println("Compilation Problems second");
 			String source_second = "class Test{\n" + source + "}\n";
 			final CompilationUnit root_second = parseStatementsCompilationUnit(source_second);
 			root_second.accept(new ASTVisitor() {
 	            public boolean visit(MethodDeclaration node) {
+	            	//System.out.println("MD2");
 	            		listMethodDeclaration.add(node);
 	            		return true;
 	            	}
+	            public boolean visit(TypeDeclaration node) {
+	        		//System.out.println("TD2");
+	        		return true;
+	        	}
 				});
+			
+			
+			//Adding Method and class around the snippet
+			if(root_second.getProblems() != null  && root_second.getProblems().length >0){
+				//System.out.println("Compilation Problems third");
+				String source_third = "class SmartCopyTestClass{\n" +"void SmartCopytestClass(){\n"+ source + "}\n" +"}\n";
+				final CompilationUnit root_third = parseStatementsCompilationUnit(source_third);
+				root_third.accept(new ASTVisitor() {
+		            public boolean visit(MethodDeclaration node) {
+		            	//System.out.println("MD3");
+		            		listMethodDeclaration.add(node);
+		            		return true;
+		            	}
+		            public boolean visit(TypeDeclaration node) {
+		        		//System.out.println("TD3");
+		        		return true;
+		        	}
+					});
+				if(root_third.getProblems() != null && root_third.getProblems().length>0){
+					source = source_third;
+				}
+			}
+			else{
+				source = source_second;
+			}
 		}
-		
-		//Adding Method and class around the snippet
-		if(root.getProblems() != null){
-			System.out.println("Compilation Problems third");
-			String source_third = "class SmartCopyTestClass{\n" +"void SmartCopytestClass(){\n"+ source + "}\n" +"}\n";
-			final CompilationUnit root_second = parseStatementsCompilationUnit(source_third);
-			root_second.accept(new ASTVisitor() {
-	            public boolean visit(MethodDeclaration node) {
-	            		listMethodDeclaration.add(node);
-	            		return true;
-	            	}
-				});
-		}
-		
-		if(root.getProblems() != null){
-			System.out.println("snippet has errors");
-		}
+
 		
 			Iterator itr = listMethodDeclaration.iterator();
 			while(itr.hasNext()){
@@ -342,19 +392,139 @@ public static void getVariables(){
 		          }
 			}
 			
-//		}
+			return source;	
+		}
 		
+	static void findLeftNodeType(){
 
+		String source = "if(cn == null){\n"
+		+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
+		+ "Class.forName(driver); \n"
+		+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
+		+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
+		+ "System.out.println(\"test\");\n"
+		+ "}\n";
+		
+		
+		List <Expression> expressionStatement = new ArrayList<Expression>();
+		String tempString = enclosedClasses(source);
+		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
+		root.accept(new ASTVisitor() {
+            public boolean visit(Assignment node) {
+            	System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>" + node.toString());
+            	expressionStatement.add(node.getRightHandSide());
+            	return true;	
+            }
+            });
+		for(Expression e: expressionStatement){
+			Expression node = e;
+	        node.accept(new ASTVisitor(){
+	        	public boolean visit(MethodInvocation node){
+	        		//System.out.println("+++++++++++++++++++"+node.getExpression());
+	        		//System.out.println(node.getName());
+	        		String className = node.getExpression().toString() + "." + node.getName().toString();
+	        		System.out.println(node.getName().toString());
+	        		 Class<?> c = null;
+					try {
+						c = Class.forName("java.sql.DriverManager");
+					} catch (ClassNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	        		Method method = null;
+					try {
+						method = c.getMethod(node.getName().toString(), String.class, String.class, String.class);
+					} catch (NoSuchMethodException | SecurityException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 
-
+	        		Type returnType = (Type) method.getGenericReturnType();
+	        		System.out.println(returnType.toString());
+	        		System.out.println(node.arguments());
+	        		return false;
+	        	}
+	        	/*
+	        	 * Would return all the types of the operands in a Infix Expression
+	        	 * @see org.eclipse.jdt.core.dom.ASTVisitor#visit(org.eclipse.jdt.core.dom.InfixExpression)
+	        	 */
+	    		public boolean visit(InfixExpression node){
+	    			System.out.println("=============================Infix Expression : " +node.toString());
+	    			System.out.println(node.hasExtendedOperands());
+	    			System.out.println("================================== "+ node.getLeftOperand().toString());
+	    			if(node.getLeftOperand().resolveTypeBinding() != null)
+	    				System.out.println(node.getLeftOperand().resolveTypeBinding().getTypeDeclaration().getName());
+	    			else
+	    				System.out.println(node.getLeftOperand().resolveTypeBinding());
+	    			System.out.println("================================== "+ node.getRightOperand().toString());
+	    			if(node.getRightOperand().resolveTypeBinding() != null)
+	    				System.out.println(node.getRightOperand().resolveTypeBinding().getTypeDeclaration().getName());
+	    			else
+	    				System.out.println(node.getRightOperand().resolveTypeBinding());
+	    			System.out.println(node.getRightOperand().resolveTypeBinding());
+	    			List<Expression> extendedOperands = node.extendedOperands();
+	    			for (Expression element : extendedOperands) {
+	    				System.out.println(element.toString());
+	    				if(element.resolveTypeBinding()!=null)
+	    					System.out.println(element.resolveTypeBinding().getTypeDeclaration().getName());
+	    				else
+	    					System.out.println(element.resolveTypeBinding());
+	    			}
+	    			System.out.println("================================== ");
+					return false;
+	    		}
+	    	});
+		}
 	}
 	
+	static String findElement(DataCollector data, String className){
+		//Find elements with api_method
+		String returnMethodName = null;
+		for(DataCollectorSchema temp:data.listClasses){
+			if(temp.type.equals("api_method")){
+				for(String tempElement:temp.elements){
+					System.out.println(tempElement);
+					if(tempElement.contains(className) == true){
+						System.out.println(temp.name);
+						return temp.name;
+					}						
+				}
+			}
+		}
+		return returnMethodName;
+	}
+	
+	static void Test(){
+		String source = "if(cn == null){\n"
+		+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
+		+ "Class.forName(driver); \n"
+		+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
+		+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
+		+ "System.out.println(\"test\");\n"
+		+ "}\n";
+		DataCollector test = null;
+		
+		String tempString = enclosedClasses(source); //enclosing the code snippet into classes 
+		List<String> undeclaredVariables = checkVariableDeclaration(tempString);
+		try {
+			 test =  getTypesFromBaker(tempString);
+		} catch (FileNotFoundException | UnsupportedEncodingException
+				| InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Done!");
+		System.out.println(findElement(test,"Class.forName"));
+	}
 	
 	public static void main(String args[]) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
-		checkVariableDeclaration();
+		
+//		checkVariableDeclaration();
 //		getVariableTypeFromDeclaration();
-	//enclosedClasses();
+	//Test();
+		findLeftNodeType();
 		//findMethodDeclaration();
 		//getVariables();
+		//getTypesFromBaker();
 	}
 }
