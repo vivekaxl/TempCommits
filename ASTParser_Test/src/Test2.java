@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -92,9 +93,6 @@ public class Test2 {
       if (problems != null && problems.length > 0) {
          System.out.println("Got problems compiling the source file: "+ problems.length);
           for (IProblem problem : problems) {
-        	  System.out.println(problem.getID());
-        	  System.out.println(IProblem.UnresolvedVariable);
-        	  System.out.println(problem.getArguments()[0]);
               System.out.println(problem);
           }
       }
@@ -118,7 +116,7 @@ public class Test2 {
 		root.accept(visitor);
 		return visitor.nodes.stream();
 	}
-public static void getVariables(){
+	public static void getVariables(){
 		String source = "class abc{\n"
 				+ " int a;\n "
 				+ "int b;\n "
@@ -258,8 +256,9 @@ public static void getVariables(){
 	/*
 	 * Given a class name find the package it is associated to.
 	 * Caveat: The packages it looks into are the packages that are already loaded
+	 * @http://stackoverflow.com/questions/8742965/how-to-find-the-package-name-given-a-class-name
 	 */
-	static void convertClasstoPackage(String className){
+	static String convertClasstoPackage(String className){
 		    final Package[] packages = Package.getPackages();
 		    for (final Package p : packages) {
 		        final String pack = p.getName();
@@ -270,15 +269,15 @@ public static void getVariables(){
 		            continue;
 		        }
 		        System.out.println(pack);
-		        return;
+		        return(pack);
 		    }
-		    System.out.println("Package not found!!");
+		    return("Package not found!!");
 	}
 	
 /*
  * Prints all the undeclared variables
  */
-	static List<String> checkVariableDeclaration(/*String source*/){
+	static List<Variables> checkVariableDeclaration(/*String source*/){
 //		String source ="package javaproject;" // package for all classes
 //	            + "class Dummy {"
 //	            + "int j;" //
@@ -310,24 +309,23 @@ public static void getVariables(){
 		+ "	return Collections.max(distance);";
 
 		source = enclosedClasses(source);
-		List<String> undeclaredVariables = new ArrayList<String>();
-		List<String> unresolvedTypes = new ArrayList<String>();
-		List<String> undefinedNames = new ArrayList<String>();
+		List<Variables> returnUndeclared = new ArrayList<Variables>();
+
 		final CompilationUnit root = parseStatementsCompilationUnit(source);
 		IProblem[] problems = root.getProblems();
 	      if (problems != null && problems.length > 0) {
 	          for (IProblem problem : problems) {
 	        	  if(problem.getID() == IProblem.UnresolvedVariable){
-	        		  if(undeclaredVariables.contains(problem.getArguments()[0])==false)
-	        			  undeclaredVariables.add(problem.getArguments()[0]);
+	        		  if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
+	        			  returnUndeclared.add(new Variables(problem.getArguments()[0],"variable","","NA"));
 	        	  }
 	        	  else if(problem.getID() == IProblem.UndefinedType){
-	        		  if(unresolvedTypes.contains(problem.getArguments()[0])==false)
-	        			  unresolvedTypes.add(problem.getArguments()[0]);
+	        		  if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
+	        			  returnUndeclared.add(new Variables(problem.getArguments()[0],"type","NA",convertClasstoPackage(problem.getArguments()[0])));
 	        	  }
 	        	  else if(problem.getID() == IProblem.UndefinedName){
-	        		  if(undefinedNames.contains(problem.getArguments()[0])==false)
-	        			  undefinedNames.add(problem.getArguments()[0]);
+	        		  if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
+	        			  returnUndeclared.add(new Variables(problem.getArguments()[0],"name","NA",convertClasstoPackage(problem.getArguments()[0])));
 	        	  }
 	        	  else{
 		        	  System.out.println("------------------------------------");
@@ -341,12 +339,24 @@ public static void getVariables(){
 		//printList(undeclaredVariables);
 		//System.out.println();
 		//printList(unresolvedTypes);
-		getListOfImports(unresolvedTypes);
+		//getListOfImports(unresolvedTypes);
 		//System.out.println();
 		//printList(undefinedNames);
-		getListOfImports(undefinedNames);
-		return undeclaredVariables;
+		//getListOfImports(undefinedNames);
+	     for(Variables element:returnUndeclared){
+	    	 System.out.println("------------------------------------");
+	    	 System.out.println(element.name);
+	    	 System.out.println(element.type);
+	    	 System.out.println(element.packageImport);
+	    	 System.out.println(element.returnType);	    	 
+	    	 System.out.println("------------------------------------");
+	     }
+		return returnUndeclared;
 	}
+	
+	/*
+	 * Given a list of classNames the method returns all the packages that needs to be imported
+	 */
 	
 	public static void getListOfImports(List<String> classNames){
 		for(String className:classNames){
@@ -726,10 +736,17 @@ public static void getVariables(){
 		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
 		checkVariableDeclaration();
 	}
-
+	
+	static void Test3(){
+		List<Variables> test = new ArrayList<Variables>();
+		test.add(new Variables("a","","",""));
+		test.add(new Variables("b","","",""));
+		test.add(new Variables("c","","",""));
+		Assert.isTrue(test.contains(new Variables("a","","","")) == true);
+	}
 	public static void main(String args[]) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
 		
-		//checkVariableDeclaration();
+		checkVariableDeclaration();
 //		getVariableTypeFromDeclaration();
 		//Test1();
 		//findLeftNodeType();
@@ -739,6 +756,6 @@ public static void getVariables(){
 		//printList(getMethodTest("java.sql.DriverManager","getConnection"));
 		//processQualifiedNames("java.lang.Class.forName(java.lang.String,java.lang.String)");
 		//findLeftNodeType();
-		Test2();
+		//Test3();
 	}
 }
