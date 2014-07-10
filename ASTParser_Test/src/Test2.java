@@ -9,6 +9,8 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -52,8 +54,6 @@ import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
 
 public class Test2 {
-	static boolean containsMethod;
-	static boolean containsClass;
 	
 	protected static ASTNode parseStatements(String source) {
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
@@ -63,6 +63,22 @@ public class Test2 {
 		parser.setBindingsRecovery(true);
 		ASTNode root = parser.createAST(null);
 		return root;
+	}
+	
+	/*
+	 * Summary: Prints all the compilation Errors
+	 * Parameters: CompilationUnit
+	 * Return: void 
+	 */
+	protected static void printCompilationErrors(CompilationUnit cu){
+      //Prints all the Compilation Errors
+      IProblem[] problems = cu.getProblems();
+      if (problems != null && problems.length > 0) {
+         System.out.println("Got problems compiling the source file: "+ problems.length);
+          for (IProblem problem : problems) {
+              System.out.println(problem);
+          }
+      }
 	}
 	
 	protected static CompilationUnit parseStatementsCompilationUnit(String source) {
@@ -75,15 +91,6 @@ public class Test2 {
                 null, null, true);
         parser.setUnitName("any_name");
         final CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-        
-//        //Prints all the Compilation Errors
-//        IProblem[] problems = cu.getProblems();
-//        if (problems != null && problems.length > 0) {
-//           System.out.println("Got problems compiling the source file: "+ problems.length);
-//            for (IProblem problem : problems) {
-//                System.out.println(problem);
-//            }
-//        }
 		return cu;
 
 	}
@@ -424,23 +431,23 @@ public static void getVariables(){
 	        		//System.out.println(node.getName());
 	        		String className = node.getExpression().toString() + "." + node.getName().toString();
 	        		System.out.println(node.getName().toString());
-	        		 Class<?> c = null;
-					try {
-						c = Class.forName("java.sql.DriverManager");
-					} catch (ClassNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-	        		Method method = null;
-					try {
-						method = c.getMethod(node.getName().toString(), String.class, String.class, String.class);
-					} catch (NoSuchMethodException | SecurityException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-	        		Type returnType = (Type) method.getGenericReturnType();
-	        		System.out.println(returnType.toString());
+//	        		 Class<?> c = null;
+//					try {
+//						c = Class.forName("java.sql.DriverManager");
+//					} catch (ClassNotFoundException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//	        		Method method = null;
+//					try {
+//						method = c.getMethod(node.getName().toString(), String.class, String.class, String.class);
+//					} catch (NoSuchMethodException | SecurityException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//
+//	        		Type returnType = (Type) method.getGenericReturnType();
+//	        		System.out.println(returnType.toString());
 	        		System.out.println(node.arguments());
 	        		return false;
 	        	}
@@ -517,14 +524,58 @@ public static void getVariables(){
 		System.out.println(findElement(test,"Class.forName"));
 	}
 	
+	public static List<String> getMethodTest(String className, String methodName){
+			
+		Class inspect = null;
+		try {
+			inspect = Class.forName(className);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	      Method[] methods = inspect.getDeclaredMethods();
+	      List<String> returnValues = new ArrayList<String>();
+	      for (int i = 0; i < methods.length; i++) {
+	    	  if(methods[i].getName().equals(methodName)){
+	  	        Method methVal = methods[i];
+		        Class returnVal = methVal.getReturnType();
+//		        int mods = methVal.getModifiers();
+//		        String modVal = Modifier.toString(mods);
+//		        Class[] paramVal = methVal.getParameterTypes();
+//		        StringBuffer params = new StringBuffer();
+//		        for (int j = 0; j < paramVal.length; j++) {
+//		          if (j > 0)
+//		            params.append(", ");
+//		          params.append(paramVal[j].getName());
+//		        }
+		        if(returnValues.contains(returnVal.getName())!=true)
+		        	returnValues.add(returnVal.getName());
+//		        
+//		        System.out.println("Method: " + methVal.getName() + "()");
+//		        System.out.println("Modifiers: " + modVal);
+//		        System.out.println("Return Type: " + returnVal.getName());
+//		        System.out.println("Parameters: " + params + "\n");
+	    	  }
+	      }
+	      if(returnValues.size()>1)
+	    	  System.out.println("I am confused!");
+		return returnValues;
+	}
+	public static  void printList (List<?> list2) 
+    {      
+        List<?> list= list2;
+        for (int i = 0; i < list.size();  i++) 
+            System.out.print(list2.get(i)+"\n");
+    }
 	public static void main(String args[]) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
 		
 //		checkVariableDeclaration();
 //		getVariableTypeFromDeclaration();
 	//Test();
-		findLeftNodeType();
+		//findLeftNodeType();
 		//findMethodDeclaration();
 		//getVariables();
 		//getTypesFromBaker();
+		printList(getMethodTest("java.sql.DriverManager","getConnection"));
 	}
 }
