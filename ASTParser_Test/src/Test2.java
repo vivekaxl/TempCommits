@@ -16,10 +16,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,6 +54,8 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
+import test.ExpressionCollector;
+
 
 
 public class Test2 {
@@ -64,6 +69,17 @@ public class Test2 {
 		ASTNode root = parser.createAST(null);
 		return root;
 	}
+	/*
+	 * Prints a List
+	 */
+	public static  void printList (List<?> list2) 
+    {      
+        List<?> list= list2;
+        for (int i = 0; i < list.size();  i++) 
+            System.out.print(list2.get(i)+"\n");
+    }
+	
+	
 	
 	/*
 	 * Summary: Prints all the compilation Errors
@@ -76,6 +92,9 @@ public class Test2 {
       if (problems != null && problems.length > 0) {
          System.out.println("Got problems compiling the source file: "+ problems.length);
           for (IProblem problem : problems) {
+        	  System.out.println(problem.getID());
+        	  System.out.println(IProblem.UnresolvedVariable);
+        	  System.out.println(problem.getArguments()[0]);
               System.out.println(problem);
           }
       }
@@ -233,15 +252,33 @@ public static void getVariables(){
 	    	System.out.println(temp.toString());
 	    	System.out.println(((VariableDeclarationStatement) (temp.getParent())).getType());
 	    	System.out.println();
-	  
 	    }
-		
+	}
+	
+	/*
+	 * Given a class name find the package it is associated to.
+	 * Caveat: The packages it looks into are the packages that are already loaded
+	 */
+	static void convertClasstoPackage(String className){
+		    final Package[] packages = Package.getPackages();
+		    for (final Package p : packages) {
+		        final String pack = p.getName();
+		        final String tentative = pack + "." + className;
+		        try {
+		            Class.forName(tentative);
+		        } catch (final ClassNotFoundException e) {
+		            continue;
+		        }
+		        System.out.println(pack);
+		        return;
+		    }
+		    System.out.println("Package not found!!");
 	}
 	
 /*
  * Prints all the undeclared variables
  */
-	static List<String> checkVariableDeclaration(String source){
+	static List<String> checkVariableDeclaration(/*String source*/){
 //		String source ="package javaproject;" // package for all classes
 //	            + "class Dummy {"
 //	            + "int j;" //
@@ -257,26 +294,66 @@ public static void getVariables(){
 //				+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
 //				+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
 //				+ "System.out.println(\"test\");\n";
-		List<String> undeclaredVariables = new ArrayList();
-		System.out.println(source);
+		String source = "	RiWordnet wordnet = new RiWordnet(null);\n"
+		+ "\n"
+		+ "	String pos;\n"
+		+ "\n"
+		+ "List<String> listStart = FindSubstring(wordnet,start);\n"
+		+ "	List<String> listEnd = FindSubstring(wordnet, end);\n "
+		+ "	List<Float> distance = new ArrayList<Float>();\n "
+		+ "	for(String s:listStart)\n"
+		+ "		for(String e:listEnd){\n"
+		+ "			pos = wordnet.getBestPos(s);\n"
+		+ "			dist = 1- wordnet.getDistance(s,e,pos);\n"
+		+ "			distance.add(dist);\n"
+		+ "		}\n"
+		+ "	return Collections.max(distance);";
+
+		source = enclosedClasses(source);
+		List<String> undeclaredVariables = new ArrayList<String>();
+		List<String> unresolvedTypes = new ArrayList<String>();
+		List<String> undefinedNames = new ArrayList<String>();
 		final CompilationUnit root = parseStatementsCompilationUnit(source);
-		root.accept(new ASTVisitor() {
-            public boolean visit(SimpleName node) {
-            	if(node.resolveBinding() == null){
-            		if(undeclaredVariables.contains(node.toString())== false ){
-            			System.out.println(node.toString()+" is not declared");
-            			undeclaredVariables.add(node.toString());
-            		}
-            		
-            	}
-//            	else{
-//            		System.out.println(node.toString() + " is declared");
-//            	}
-            	return true;
-            }
-		});  
-		
+		IProblem[] problems = root.getProblems();
+	      if (problems != null && problems.length > 0) {
+	          for (IProblem problem : problems) {
+	        	  if(problem.getID() == IProblem.UnresolvedVariable){
+	        		  if(undeclaredVariables.contains(problem.getArguments()[0])==false)
+	        			  undeclaredVariables.add(problem.getArguments()[0]);
+	        	  }
+	        	  else if(problem.getID() == IProblem.UndefinedType){
+	        		  if(unresolvedTypes.contains(problem.getArguments()[0])==false)
+	        			  unresolvedTypes.add(problem.getArguments()[0]);
+	        	  }
+	        	  else if(problem.getID() == IProblem.UndefinedName){
+	        		  if(undefinedNames.contains(problem.getArguments()[0])==false)
+	        			  undefinedNames.add(problem.getArguments()[0]);
+	        	  }
+	        	  else{
+		        	  System.out.println("------------------------------------");
+		        	  System.out.println(problem);
+		        	  System.out.println(problem.getID());
+		        	  System.out.println("------------------------------------");
+	        	  }
+	        	  
+	          }
+	      }
+		//printList(undeclaredVariables);
+		//System.out.println();
+		//printList(unresolvedTypes);
+		getListOfImports(unresolvedTypes);
+		//System.out.println();
+		//printList(undefinedNames);
+		getListOfImports(undefinedNames);
 		return undeclaredVariables;
+	}
+	
+	public static void getListOfImports(List<String> classNames){
+		for(String className:classNames){
+			System.out.println(className);
+			convertClasstoPackage(className);
+		}
+		System.out.println();
 	}
 	
 	public static void findMethodDeclaration(){
@@ -402,53 +479,67 @@ public static void getVariables(){
 			return source;	
 		}
 		
-	static void findLeftNodeType(){
+	static List<ExpressionCollector> findLeftNodeType(DataCollector data, String tempString){
 
-		String source = "if(cn == null){\n"
-		+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
-		+ "Class.forName(driver); \n"
-		+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
-		+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
-		+ "System.out.println(\"test\");\n"
-		+ "}\n";
-		
-		
+//		String source = "if(cn == null){\n"
+//		+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
+//		+ "Class.forName(driver); \n"
+//		+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
+//		+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
+//		+ "System.out.println(\"test\");\n"
+//		+ "}\n";
+		List<String> tempList = new ArrayList<String>();
+		List<String> returnBakerReturnType = new ArrayList<String>();
+		List <ExpressionCollector> returnValue = new ArrayList<ExpressionCollector>();
 		List <Expression> expressionStatement = new ArrayList<Expression>();
-		String tempString = enclosedClasses(source);
+		//String tempString = enclosedClasses(source);
 		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
 		root.accept(new ASTVisitor() {
             public boolean visit(Assignment node) {
-            	System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>" + node.toString());
+            	//System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>" + node.toString());
             	expressionStatement.add(node.getRightHandSide());
             	return true;	
             }
             });
 		for(Expression e: expressionStatement){
 			Expression node = e;
+			System.out.println(node.toString());
 	        node.accept(new ASTVisitor(){
 	        	public boolean visit(MethodInvocation node){
-	        		//System.out.println("+++++++++++++++++++"+node.getExpression());
-	        		//System.out.println(node.getName());
 	        		String className = node.getExpression().toString() + "." + node.getName().toString();
-	        		System.out.println(node.getName().toString());
-//	        		 Class<?> c = null;
-//					try {
-//						c = Class.forName("java.sql.DriverManager");
-//					} catch (ClassNotFoundException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//	        		Method method = null;
-//					try {
-//						method = c.getMethod(node.getName().toString(), String.class, String.class, String.class);
-//					} catch (NoSuchMethodException | SecurityException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//
-//	        		Type returnType = (Type) method.getGenericReturnType();
-//	        		System.out.println(returnType.toString());
-	        		System.out.println(node.arguments());
+	        		//System.out.println(node.getName().toString());
+	        		//System.out.println(node.arguments());
+	        		//Find from baker what is the api this corresponds to
+	        		List<String> elementBakerReturnType = elementsMatchFromBaker(data,className);
+	        		for(String element:elementBakerReturnType){
+	        			//System.out.println(element);
+	        			//parse the api returned by the baker and break it down to className, methodName and parameterList
+	        			QualifiedNames tempQN = processQualifiedNames(element);
+	        			//find the return type of api based on the className and methodName
+	        			//TODO: can pass parameters as well then there would be only one returnValue rather than a list of returnValues
+	        			List<String> tempReturnType = getReturnType(tempQN.className, tempQN.methodName);
+	        			for(String element2:tempReturnType){
+	        				if(returnBakerReturnType.contains(element2)==false)
+	        					returnBakerReturnType.add(element2);
+	        			}
+	        		}
+	        		if(returnBakerReturnType.size() > 1){
+	        			System.out.println("I am confused");
+	        			returnValue.add(new ExpressionCollector(node.toString(), "confused"));
+	        		}
+	        		else if(tempList.size() == 0){
+	    				returnValue.add(new ExpressionCollector(node.toString(), "unresolved"));
+	    			}
+	        		else{
+	        			System.out.println("-----------------------------");
+	        			Assignment temp = (Assignment) node.getParent();
+	        			System.out.println(temp.getLeftHandSide().toString());
+	        			System.out.println(node.getParent().getNodeType());
+	        			//TODO
+	        			//Make sure I include this in a structure of undeclared variables.
+	        			System.out.println("-----------------------------");
+	        			returnValue.add(new ExpressionCollector(node.toString(), returnBakerReturnType.get(0)));
+	        		}
 	        		return false;
 	        	}
 	        	/*
@@ -456,44 +547,91 @@ public static void getVariables(){
 	        	 * @see org.eclipse.jdt.core.dom.ASTVisitor#visit(org.eclipse.jdt.core.dom.InfixExpression)
 	        	 */
 	    		public boolean visit(InfixExpression node){
-	    			System.out.println("=============================Infix Expression : " +node.toString());
-	    			System.out.println(node.hasExtendedOperands());
-	    			System.out.println("================================== "+ node.getLeftOperand().toString());
-	    			if(node.getLeftOperand().resolveTypeBinding() != null)
-	    				System.out.println(node.getLeftOperand().resolveTypeBinding().getTypeDeclaration().getName());
-	    			else
-	    				System.out.println(node.getLeftOperand().resolveTypeBinding());
-	    			System.out.println("================================== "+ node.getRightOperand().toString());
-	    			if(node.getRightOperand().resolveTypeBinding() != null)
-	    				System.out.println(node.getRightOperand().resolveTypeBinding().getTypeDeclaration().getName());
-	    			else
-	    				System.out.println(node.getRightOperand().resolveTypeBinding());
-	    			System.out.println(node.getRightOperand().resolveTypeBinding());
+	    			
+	    			//System.out.println("=============================Infix Expression : " +node.toString());
+	    			//System.out.println(node.hasExtendedOperands());
+	    			//System.out.println("================================== "+ node.getLeftOperand().toString());
+	    			if(node.getLeftOperand().resolveTypeBinding() != null){
+	    				//System.out.println(node.getLeftOperand().resolveTypeBinding().getTypeDeclaration().getName());
+	    				tempList.add(node.getLeftOperand().resolveTypeBinding().getTypeDeclaration().getName());
+	    			}
+	    			else;
+	    				//System.out.println(node.getLeftOperand().resolveTypeBinding());
+	    			//System.out.println("================================== "+ node.getRightOperand().toString());
+	    			if(node.getRightOperand().resolveTypeBinding() != null){
+	    				//System.out.println(node.getRightOperand().resolveTypeBinding().getTypeDeclaration().getName());
+	    				tempList.add(node.getRightOperand().resolveTypeBinding().getTypeDeclaration().getName());
+	    			}
+	    			else;
+	    				//System.out.println(node.getRightOperand().resolveTypeBinding());
+	    			//System.out.println(node.getRightOperand().resolveTypeBinding());
 	    			List<Expression> extendedOperands = node.extendedOperands();
 	    			for (Expression element : extendedOperands) {
-	    				System.out.println(element.toString());
-	    				if(element.resolveTypeBinding()!=null)
-	    					System.out.println(element.resolveTypeBinding().getTypeDeclaration().getName());
-	    				else
-	    					System.out.println(element.resolveTypeBinding());
+	    				//System.out.println(element.toString());
+	    				if(element.resolveTypeBinding()!=null){
+	    					//System.out.println(element.resolveTypeBinding().getTypeDeclaration().getName());
+	    					tempList.add(element.resolveTypeBinding().getTypeDeclaration().getName());
+	    				}
+	    				else;
+	    					//System.out.println(element.resolveTypeBinding());
 	    			}
-	    			System.out.println("================================== ");
+	    			if(tempList.size()>1){
+	    				returnValue.add(new ExpressionCollector(node.toString(), "confused"));
+	    			}
+	    			else if(tempList.size() == 0){
+	    				returnValue.add(new ExpressionCollector(node.toString(), "unresolved"));
+	    			}
+	    			else{
+	    				returnValue.add(new ExpressionCollector(node.toString(), tempList.get(0)));
+	    			}
+	    			
 					return false;
 	    		}
 	    	});
+	        
+	        
 		}
+		return returnValue;
 	}
 	
-	static String findElement(DataCollector data, String className){
+	static QualifiedNames processQualifiedNames(String name){
+		QualifiedNames returnValue = new QualifiedNames();
+		//Pattern pattern = Pattern.compile("\\(([A-Za-z0-9.,]+)\\)");
+		Pattern pattern = Pattern.compile("\\(([^\"]*)\\)");
+		Matcher m = pattern.matcher(name);
+		if (m.find()){ 
+			String[] tempElements = m.group(1).split(",");
+			returnValue.setArguments(Arrays.asList(tempElements));
+		}
+		name = name.replaceAll("\\(.*\\)", "");
+		String[] temp = name.split("\\.");
+		returnValue.setMethodName(temp[temp.length-1]);
+		
+		String className = temp[0];
+		for(int i=1;i<temp.length-1;i++)
+			className = className + "." + temp[i];
+		returnValue.setClassName(className);
+		System.out.println(className);
+		
+
+//		printList(returnValue.getArguments());
+//		System.out.println(returnValue.getMethodName());
+//		System.out.println(returnValue.getClassName());
+		
+		return returnValue;
+	}
+	/*
+	 * Given an incomplete className.methodName, it parses through the data returned by Baker 
+	 * and returns the complete list of matching qualified names	 * 
+	 */
+	static List<String> elementsMatchFromBaker(DataCollector data, String className){
 		//Find elements with api_method
-		String returnMethodName = null;
+		List<String> returnMethodName = new ArrayList<String>();
 		for(DataCollectorSchema temp:data.listClasses){
 			if(temp.type.equals("api_method")){
 				for(String tempElement:temp.elements){
-					System.out.println(tempElement);
 					if(tempElement.contains(className) == true){
-						System.out.println(temp.name);
-						return temp.name;
+						returnMethodName.add(tempElement);
 					}						
 				}
 			}
@@ -501,30 +639,12 @@ public static void getVariables(){
 		return returnMethodName;
 	}
 	
-	static void Test(){
-		String source = "if(cn == null){\n"
-		+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
-		+ "Class.forName(driver); \n"
-		+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
-		+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
-		+ "System.out.println(\"test\");\n"
-		+ "}\n";
-		DataCollector test = null;
-		
-		String tempString = enclosedClasses(source); //enclosing the code snippet into classes 
-		List<String> undeclaredVariables = checkVariableDeclaration(tempString);
-		try {
-			 test =  getTypesFromBaker(tempString);
-		} catch (FileNotFoundException | UnsupportedEncodingException
-				| InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.println("Done!");
-		System.out.println(findElement(test,"Class.forName"));
-	}
-	
-	public static List<String> getMethodTest(String className, String methodName){
+	/*
+	 * Given class name and method, the method would return the return values of the methods
+	 * Input: ClassName and Method Name
+	 * Return: List of ReturnTypes. Sometime methods are overloaded.
+	 */
+	public static List<String> getReturnType(String className, String methodName){
 			
 		Class inspect = null;
 		try {
@@ -537,6 +657,7 @@ public static void getVariables(){
 	      List<String> returnValues = new ArrayList<String>();
 	      for (int i = 0; i < methods.length; i++) {
 	    	  if(methods[i].getName().equals(methodName)){
+	    		  System.out.println("Method Found");
 	  	        Method methVal = methods[i];
 		        Class returnVal = methVal.getReturnType();
 //		        int mods = methVal.getModifiers();
@@ -548,8 +669,10 @@ public static void getVariables(){
 //		            params.append(", ");
 //		          params.append(paramVal[j].getName());
 //		        }
-		        if(returnValues.contains(returnVal.getName())!=true)
+		        if(returnValues.contains(returnVal.getName())!=true){
 		        	returnValues.add(returnVal.getName());
+		        	System.out.println("Return Type: " +returnVal.getName());
+		        }
 //		        
 //		        System.out.println("Method: " + methVal.getName() + "()");
 //		        System.out.println("Modifiers: " + modVal);
@@ -561,21 +684,61 @@ public static void getVariables(){
 	    	  System.out.println("I am confused!");
 		return returnValues;
 	}
-	public static  void printList (List<?> list2) 
-    {      
-        List<?> list= list2;
-        for (int i = 0; i < list.size();  i++) 
-            System.out.print(list2.get(i)+"\n");
-    }
+	static void Test1(){
+		String source = "if(cn == null){\n"
+		+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
+		+ "Class.forName(driver); \n"
+		+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
+		+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
+		+ "System.out.println(\"test\");\n"
+		+ "}\n";
+
+		DataCollector data = null;
+		//enclosing the code snippet into classes 
+		String tempString = enclosedClasses(source); 
+		//get list of undeclared variables
+		//List<String> undeclaredVariables = checkVariableDeclaration(tempString);
+		//get types from the Baker (http://gadget.cs.uwaterloo.ca:2145/snippet/onlineextractor.html)
+		try {
+			 data =  getTypesFromBaker(tempString);
+		} catch (FileNotFoundException | UnsupportedEncodingException
+				| InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Done!");
+		//printList(elementsMatchFromBaker(data,"Class.forName"));
+		
+		List<ExpressionCollector>returnValue =  findLeftNodeType(data,tempString);
+		returnValue.stream().forEach(p->p.printData());
+	}
+	
+	static void Test2(){
+		String source = "if(cn == null){\n"
+		+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
+		+ "Class.forName(driver); \n"
+		+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
+		+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
+		+ "System.out.println(\"test\");\n"
+		+ "}\n";
+		
+		String tempString = enclosedClasses(source);
+		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
+		checkVariableDeclaration();
+	}
+
 	public static void main(String args[]) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
 		
-//		checkVariableDeclaration();
+		//checkVariableDeclaration();
 //		getVariableTypeFromDeclaration();
-	//Test();
+		//Test1();
 		//findLeftNodeType();
 		//findMethodDeclaration();
 		//getVariables();
 		//getTypesFromBaker();
-		printList(getMethodTest("java.sql.DriverManager","getConnection"));
+		//printList(getMethodTest("java.sql.DriverManager","getConnection"));
+		//processQualifiedNames("java.lang.Class.forName(java.lang.String,java.lang.String)");
+		//findLeftNodeType();
+		Test2();
 	}
 }

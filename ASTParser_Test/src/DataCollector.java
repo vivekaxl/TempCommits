@@ -29,10 +29,10 @@ public class DataCollector {
 				System.out.println(str);
 			}
 			System.out.println("Character :" + temp.character);
-			System.out.println(InputString.substring(temp.character, temp.character+10));
 			System.out.println();
 		}
 	}
+	
 	
 	List<DataCollectorSchema> outerparser(String input){
 		List<String> tempOuters = new ArrayList<String>();
@@ -80,8 +80,9 @@ public class DataCollector {
 		m = p.matcher(tempElement);
 		while (m.find())
 			tempElement = m.group(1);
-		tempElement = tempElement.replace(" ","");
-		String[] tempElements = tempElement.split(",");
+		//can't use ',' as a separator so I first replace ), with )|| and then split it with ||
+		tempElement = tempElement.replace(" ","").replace("\n", "").replace("),",")||");
+		String[] tempElements = tempElement.split("\\|\\|");
 		returnValue.elements = Arrays.asList(tempElements);
 		
 
