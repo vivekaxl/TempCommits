@@ -1,11 +1,22 @@
 
 public class Variables {
+	
 	public Variables(String name, String type, String returnType,String packageImport) {
-		super();
 		this.name = name;
 		this.type = type;
+		this.variableType = "";
 		this.returnType = returnType;
 		this.packageImport = packageImport;
+		this.lineNumber=-1;
+	}
+	
+	public Variables(String name, String type,String variableType, String returnType,String packageImport,int lineNumber) {
+		this.name = name;
+		this.type = type;
+		this.variableType = variableType;
+		this.returnType = returnType;
+		this.packageImport = packageImport;
+		this.lineNumber=lineNumber;
 	}
 
 	@Override
@@ -47,22 +58,8 @@ public class Variables {
 		else
 			this.returnType = "NA";
 	}
-
+	String variableType;
 	String returnType;
 	String packageImport;
-	
-
-//	@Override
-//    public boolean equals (Variables other) {
-//        boolean destinationSame = false;
-//        destinationsame = this.getDestination().equals(other.getDestination());
-//        Integer thisQuantity = (Integer) this.getQuantity();
-//        Integer otherQuantity = (Integer) other.getQuantity();
-//        quantitySame = thisQuantity.equals(otherQuantity);
-//        return destinationSame && quantitySame;
-//    }
-//
-//    public int hashCode() {
-//        return destination.hashCode() + quantity;
-//    }
+	Integer lineNumber; //first line where the variable was used
 }
