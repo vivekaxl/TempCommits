@@ -8,5 +8,4 @@ cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);
 System.out.println("test");
 }
 }
-}
 

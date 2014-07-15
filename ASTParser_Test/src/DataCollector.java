@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+
 
 public class DataCollector {
 	List<DataCollectorSchema> listClasses;
@@ -17,6 +19,9 @@ public class DataCollector {
 	}
 	public List<DataCollectorSchema> getData(){
 		return listClasses;
+	}
+	protected int numberOfParamenter(String str){
+				return(StringUtils.countMatches(str, ","));
 	}
 	public void printData(){
 		for(DataCollectorSchema temp:listClasses){
@@ -91,6 +96,7 @@ public class DataCollector {
 		while (m.find()) {
 			returnValue.character = Integer.parseInt(m.group(1).replace("\"", "").replace(",","").replace(" ",""));
 			}
+		
 		return returnValue;
 	}
 

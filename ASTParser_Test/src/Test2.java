@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -337,38 +338,38 @@ public class Test2 {
 		else
 			return false;
 	}
-	
-	
+
+
 	/*
 	 * Print all the declared variables in the scope of the method
 	 */
 
 	static List<Variables> getVariablesAndImport(String source,String methodName){
 
-//		String source = "import java.util.ArrayList;\n"
-//				+ "import java.util.List;\n"
-//				+ "\n"
-//				+ "class abc{\n"
-//				+ "public void test(){\n"
-//				+ "	RiWordnet wordnet = new RiWordnet(null);\n"
-//				+ "\n"
-//				+ "	String pos;\n"
-//				+ "\n"
-//				+ "List<String> listStart = FindSubstring(wordnet,start);\n"
-//				+ "	List<String> listEnd = FindSubstring(wordnet, end);\n "
-//				+ "	List<Float> distance = new ArrayList<Float>();\n "
-//				+ "	for(String s:listStart)\n"
-//				+ "		for(String e:listEnd){\n"
-//				+ "			pos = wordnet.getBestPos(s);\n"
-//				+ "			dist = 1- wordnet.getDistance(s,e,pos);\n"
-//				+ "			distance.add(dist);\n"
-//				+ "		}\n"
-//				+ "	return Collections.max(distance);"
-//				+ "}\n"
-//				+ "public void test2(){\n"
-//				+ "int a,b,c,d;\n"
-//				+ "}\n"
-//				+ "}\n";
+		//		String source = "import java.util.ArrayList;\n"
+		//				+ "import java.util.List;\n"
+		//				+ "\n"
+		//				+ "class abc{\n"
+		//				+ "public void test(){\n"
+		//				+ "	RiWordnet wordnet = new RiWordnet(null);\n"
+		//				+ "\n"
+		//				+ "	String pos;\n"
+		//				+ "\n"
+		//				+ "List<String> listStart = FindSubstring(wordnet,start);\n"
+		//				+ "	List<String> listEnd = FindSubstring(wordnet, end);\n "
+		//				+ "	List<Float> distance = new ArrayList<Float>();\n "
+		//				+ "	for(String s:listStart)\n"
+		//				+ "		for(String e:listEnd){\n"
+		//				+ "			pos = wordnet.getBestPos(s);\n"
+		//				+ "			dist = 1- wordnet.getDistance(s,e,pos);\n"
+		//				+ "			distance.add(dist);\n"
+		//				+ "		}\n"
+		//				+ "	return Collections.max(distance);"
+		//				+ "}\n"
+		//				+ "public void test2(){\n"
+		//				+ "int a,b,c,d;\n"
+		//				+ "}\n"
+		//				+ "}\n";
 
 		List<Variables> returnDeclared = new ArrayList<Variables>();
 		//source = enclosedClasses(source);
@@ -378,7 +379,7 @@ public class Test2 {
 			System.out.println("Method doesn't exist!");
 			return null;
 		}
-		
+
 		root.accept(new ASTVisitor() {
 			public boolean visit(ImportDeclaration node){
 				System.out.println(node.getName().getFullyQualifiedName());
@@ -415,47 +416,47 @@ public class Test2 {
 				if(node.getName().toString().equals(methodName)){
 					node.accept(new ASTVisitor() {		            
 						public boolean visit(VariableDeclarationFragment node) {
-						if(node.resolveBinding() != null){
-							ASTNode temp = (ASTNode)node;
-							while(temp.getNodeType() != ASTNode.VARIABLE_DECLARATION_STATEMENT)
-								temp=temp.getParent();
-							returnDeclared.add(new Variables(node.getName().toString(),"variable",((VariableDeclarationStatement) temp).getType().toString(),"","NA",root.getLineNumber(temp.getStartPosition())));
-						}
-						return false;
-					}
-					public boolean visit(SingleVariableDeclaration node) {
-						if(node.resolveBinding() != null){
-							returnDeclared.add(new Variables(node.getName().toString(),"variable",node.getType().toString(),"","NA",root.getLineNumber(node.getStartPosition())));
-						}
-						return false;
-					}
-					public boolean visit(VariableDeclaration node) {
-						if(node.resolveBinding() != null){
 							if(node.resolveBinding() != null){
 								ASTNode temp = (ASTNode)node;
 								while(temp.getNodeType() != ASTNode.VARIABLE_DECLARATION_STATEMENT)
 									temp=temp.getParent();
 								returnDeclared.add(new Variables(node.getName().toString(),"variable",((VariableDeclarationStatement) temp).getType().toString(),"","NA",root.getLineNumber(temp.getStartPosition())));
 							}
+							return false;
 						}
-						return false;
-					}
+						public boolean visit(SingleVariableDeclaration node) {
+							if(node.resolveBinding() != null){
+								returnDeclared.add(new Variables(node.getName().toString(),"variable",node.getType().toString(),"","NA",root.getLineNumber(node.getStartPosition())));
+							}
+							return false;
+						}
+						public boolean visit(VariableDeclaration node) {
+							if(node.resolveBinding() != null){
+								if(node.resolveBinding() != null){
+									ASTNode temp = (ASTNode)node;
+									while(temp.getNodeType() != ASTNode.VARIABLE_DECLARATION_STATEMENT)
+										temp=temp.getParent();
+									returnDeclared.add(new Variables(node.getName().toString(),"variable",((VariableDeclarationStatement) temp).getType().toString(),"","NA",root.getLineNumber(temp.getStartPosition())));
+								}
+							}
+							return false;
+						}
 					});
 				}
 				return false;
 			}
 		});
-//		for(Variables element:returnDeclared){
-//			System.out.println("------------------------------------");
-//			System.out.println(element.name);
-////			System.out.println(element.type);
-//			System.out.println(element.variableType);
-////			System.out.println(element.packageImport);
-////			System.out.println(element.returnType);	
-////			System.out.println(element.lineNumber);
-//			System.out.println(element.lineNumber);
-////			System.out.println("------------------------------------");
-//		}
+		//		for(Variables element:returnDeclared){
+		//			System.out.println("------------------------------------");
+		//			System.out.println(element.name);
+		////			System.out.println(element.type);
+		//			System.out.println(element.variableType);
+		////			System.out.println(element.packageImport);
+		////			System.out.println(element.returnType);	
+		////			System.out.println(element.lineNumber);
+		//			System.out.println(element.lineNumber);
+		////			System.out.println("------------------------------------");
+		//		}
 		return returnDeclared;
 	}
 
@@ -660,6 +661,7 @@ public class Test2 {
 		//		+ "}\n";
 		List<String> tempList = new ArrayList<String>();
 		List<String> returnBakerReturnType = new ArrayList<String>();
+		List<String> returnBakerArguements = new ArrayList<String>();
 		List <ExpressionCollector> returnValue = new ArrayList<ExpressionCollector>();
 		List <Expression> expressionStatement = new ArrayList<Expression>();
 		//String tempString = enclosedClasses(source);
@@ -673,12 +675,14 @@ public class Test2 {
 		});
 		for(Expression e: expressionStatement){
 			Expression node = e;
-			System.out.println(node.toString());
+			System.out.println("findLeftNodeType expression :: " + node.toString());
 			node.accept(new ASTVisitor(){
 				public boolean visit(MethodInvocation node){
 					String className = node.getExpression().toString() + "." + node.getName().toString();
 					//System.out.println(node.getName().toString());
-					//System.out.println(node.arguments());
+					System.out.println("findLeftNodeType arguements :: "+node.arguments());
+					System.out.println("findLeftNodeType arguements size :: "+node.arguments().size());
+					int noArguments = node.arguments().size();
 					//Find from baker what is the api this corresponds to
 					List<String> elementBakerReturnType = elementsMatchFromBaker(data,className);
 					for(String element:elementBakerReturnType){
@@ -689,16 +693,21 @@ public class Test2 {
 						//TODO: can pass parameters as well then there would be only one returnValue rather than a list of returnValues
 						List<String> tempReturnType = getReturnType(tempQN.className, tempQN.methodName);
 						for(String element2:tempReturnType){
-							if(returnBakerReturnType.contains(element2)==false)
-								returnBakerReturnType.add(element2);
+							if(returnBakerReturnType.contains(element2)==false && (noArguments-1) == StringUtils.countMatches(element2.split("\\-")[1], ",")){
+								System.out.println("findLeftNodeType element2 :: "+element2);
+								returnBakerReturnType.add(element2.split("\\-")[0]);
+								returnBakerArguements.add(element2.split("\\-")[1]);
+								System.out.println("findLeftNodeType arguments number :: "+StringUtils.countMatches(element2.split("\\-")[1], ","));
+							}
+								
 						}
 					}
 					if(returnBakerReturnType.size() > 1){
-						System.out.println("I am confused");
-						returnValue.add(new ExpressionCollector(node.toString(), "confused"));
+						System.out.println("findLeftNodeType arguements number :: I am confused");
+						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), "confused","NA"));
 					}
 					else if(tempList.size() == 0){
-						returnValue.add(new ExpressionCollector(node.toString(), "unresolved"));
+						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), "unresolved","NA"));
 					}
 					else{
 						System.out.println("-----------------------------");
@@ -708,7 +717,7 @@ public class Test2 {
 						//TODO
 						//Make sure I include this in a structure of undeclared variables.
 						System.out.println("-----------------------------");
-						returnValue.add(new ExpressionCollector(node.toString(), returnBakerReturnType.get(0)));
+						returnValue.add(new ExpressionCollector(node.toString(),temp.getLeftHandSide().toString(), returnBakerReturnType.get(0),returnBakerArguements.get(0)));
 					}
 					return false;
 				}
@@ -746,13 +755,13 @@ public class Test2 {
 						//System.out.println(element.resolveTypeBinding());
 					}
 					if(tempList.size()>1){
-						returnValue.add(new ExpressionCollector(node.toString(), "confused"));
+						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), "confused","NA"));
 					}
 					else if(tempList.size() == 0){
-						returnValue.add(new ExpressionCollector(node.toString(), "unresolved"));
+						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), "unresolved","NA"));
 					}
 					else{
-						returnValue.add(new ExpressionCollector(node.toString(), tempList.get(0)));
+						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), tempList.get(0),"NA"));
 					}
 
 					return false;
@@ -798,7 +807,8 @@ public class Test2 {
 		//Find elements with api_method
 		List<String> returnMethodName = new ArrayList<String>();
 		for(DataCollectorSchema temp:data.listClasses){
-			if(temp.type.equals("api_method")){
+			//			if(temp.type.equals("api_method"))
+			{
 				for(String tempElement:temp.elements){
 					if(tempElement.contains(className) == true){
 						returnMethodName.add(tempElement);
@@ -808,6 +818,7 @@ public class Test2 {
 		}
 		return returnMethodName;
 	}
+
 
 	/*
 	 * Given class name and method, the method would return the return values of the methods
@@ -832,15 +843,15 @@ public class Test2 {
 				Class returnVal = methVal.getReturnType();
 				//		        int mods = methVal.getModifiers();
 				//		        String modVal = Modifier.toString(mods);
-				//		        Class[] paramVal = methVal.getParameterTypes();
-				//		        StringBuffer params = new StringBuffer();
-				//		        for (int j = 0; j < paramVal.length; j++) {
-				//		          if (j > 0)
-				//		            params.append(", ");
-				//		          params.append(paramVal[j].getName());
-				//		        }
+				Class[] paramVal = methVal.getParameterTypes();
+				StringBuffer params = new StringBuffer();
+				for (int j = 0; j < paramVal.length; j++) {
+				         if (j > 0)
+				           params.append(", ");
+				         params.append(paramVal[j].getName());
+				}
 				if(returnValues.contains(returnVal.getName())!=true){
-					returnValues.add(returnVal.getName());
+					returnValues.add(returnVal.getName()+" - " + params);
 					System.out.println("Return Type: " +returnVal.getName());
 				}
 				//		        
@@ -873,6 +884,36 @@ public class Test2 {
 		return undeclaredVariables;
 	}
 
+	static List<Variables> mergeExpressionCollector(List<ExpressionCollector>ec, List<Variables>undeclaredVariables){
+		for(Variables element: undeclaredVariables){
+			for(ExpressionCollector e:ec){
+				System.out.println("mergeExpressionCollector:" + element.name + " , " + e.getVariableName());
+				if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==false) && (e.getReturnType().equals("unresolved") ==false)){
+					element.variableType = e.getReturnType();
+					element.packageImport = convertClasstoPackage(processQualifiedNames(element.variableType).methodName);
+				}
+			}
+		}
+		return undeclaredVariables;
+	}
+	
+	static List<Variables> fillUndeclaredVariablesFromBaker(DataCollector data,List<Variables> undeclaredVariables){
+			//Find elements with api_type
+			for(Variables element:undeclaredVariables){
+				for(DataCollectorSchema temp:data.listClasses){
+					if(temp.type.equals("api_type"))
+					{
+						for(String tempElement:temp.elements){
+							if(tempElement.contains(element.name) == true && temp.elements.size() == 1){
+								element.packageImport = tempElement;
+							}						
+						}
+					}
+				}
+			}
+			return undeclaredVariables;
+	}
+	
 	static void Test1(){
 		String source = "if(cn == null){\n"
 				+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
@@ -952,65 +993,106 @@ public class Test2 {
 		}
 
 	}
-	
+
 	public static void Test5(){
 		String source = "import java.util.ArrayList;\n"
 				+ "import java.util.List;\n"
 				+ "\n"
 				+ "class abc{\n"
 				+ "public void test(){\n"
-				+ "	RiWordnet wordnet = new RiWordnet(null);\n"
-				+ "\n"
-				+ "	String pos;\n"
-				+ "\n"
-				+ "List<String> listStart = FindSubstring(wordnet,start);\n"
-				+ "	List<String> listEnd = FindSubstring(wordnet, end);\n "
-				+ "	List<Float> distance = new ArrayList<Float>();\n "
-				+ "	for(String s:listStart)\n"
-				+ "		for(String e:listEnd){\n"
-				+ "			pos = wordnet.getBestPos(s);\n"
-				+ "			dist = 1- wordnet.getDistance(s,e,pos);\n"
-				+ "			distance.add(dist);\n"
-				+ "		}\n"
-				+ "	return Collections.max(distance);"
+				+ "if(cn == null){\n"
+				+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
+				+ "Class.forName(driver); \n"
+				+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
+				+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
+				+ "System.out.println(\"test\");\n"
+				+ "}\n"
 				+ "}\n"
 				+ "public void test2(){\n"
 				+ "int a,b,c,d;\n"
 				+ "}\n"
 				+ "}\n";
-		
+		DataCollector data = null;
+
 		List<Variables> undeclaredVariables = checkVariableDeclaration(source);
+
+		try {
+			data =  getTypesFromBaker(source);
+		} catch (FileNotFoundException | UnsupportedEncodingException| InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Done!");
+		List<ExpressionCollector>returnValue =  findLeftNodeType(data,source); //Assignment
 		for(Variables element:undeclaredVariables){
 			System.out.println("------------------------------------");
 			System.out.println(element.name);
-//			System.out.println(element.type);
+			//			System.out.println(element.type);
 			System.out.println(element.variableType);
-//			System.out.println(element.packageImport);
-//			System.out.println(element.returnType);	
-//			System.out.println(element.lineNumber);
+			//			System.out.println(element.packageImport);
+			//			System.out.println(element.returnType);	
+			//			System.out.println(element.lineNumber);
 			System.out.println(element.lineNumber);
-//			System.out.println("------------------------------------");
+			//			System.out.println("------------------------------------");
 		}
+		undeclaredVariables = fillUndeclaredVariablesFromBaker(data,undeclaredVariables);
+		undeclaredVariables = mergeExpressionCollector(returnValue,undeclaredVariables);
+
+
 		for(Variables element:undeclaredVariables){
-			if(element.type == "variable"){
-				System.out.println("#####################################");
-				System.out.println(element.name);
-				List<Variables> temp =new ArrayList<Variables>(); 
-				String methodName = getVariablesInScope(source, element.name);
-				temp = getVariablesAndImport(source,methodName );
-				for(Variables e:temp){
-					System.out.println("------------------------------------");
-					System.out.println(e.name);
-//					System.out.println(element.type);
-					System.out.println(e.variableType);
-//					System.out.println(element.packageImport);
-//					System.out.println(element.returnType);	
-//					System.out.println(element.lineNumber);
-					System.out.println(e.lineNumber);
-//					System.out.println("------------------------------------");
-				}
-			}
+			System.out.println("------------------------------------");
+			System.out.println(element.name);
+			System.out.println(element.type);
+			System.out.println(element.variableType);
+			System.out.println(element.packageImport);
+			//			System.out.println(element.returnType);	
+			//			System.out.println(element.lineNumber);
+			System.out.println(element.lineNumber);
+			//			System.out.println("------------------------------------");
 		}
+		//		for(Variables element:undeclaredVariables){
+		//			if(element.type == "variable"){
+		//				System.out.println("#####################################");
+		//				System.out.println(element.name);
+		//				List<Variables> temp =new ArrayList<Variables>(); 
+		//				String methodName = getVariablesInScope(source, element.name);
+		//				temp = getVariablesAndImport(source,methodName );
+		//				for(Variables e:temp){
+		//					System.out.println("------------------------------------");
+		//					System.out.println(e.name);
+		////					System.out.println(element.type);
+		//					System.out.println(e.variableType);
+		////					System.out.println(element.packageImport);
+		////					System.out.println(element.returnType);	
+		////					System.out.println(element.lineNumber);
+		//					System.out.println(e.lineNumber);
+		////					System.out.println("------------------------------------");
+		//				}
+		//			}
+		//		}
+	}
+	public static void Test6(){
+		DataCollector data =  null;
+				String source = "if(cn == null){\n"
+						+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
+						+ "Class.forName(driver); \n"
+						+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
+						+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
+						+ "System.out.println(\"test\");\n";
+
+				String tempString = enclosedClasses(source);
+				try {
+					data =  getTypesFromBaker(tempString);
+				} catch (FileNotFoundException | UnsupportedEncodingException
+						| InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.out.println("Done!");
+				//printList(elementsMatchFromBaker(data,"Class.forName"));
+
+				List<ExpressionCollector>returnValue =  findLeftNodeType(data,tempString);
+				returnValue.stream().forEach(p->p.printData());
+			
 	}
 	public static void main(String args[]) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
 
@@ -1028,7 +1110,7 @@ public class Test2 {
 		//getVariablesAndImport();
 		//		getVariablesInScope();
 		//getVariablesAndImport("tesx");
-		//Test5();
-		Test1();
+		Test6();
+		//Test1();
 	}
 }
