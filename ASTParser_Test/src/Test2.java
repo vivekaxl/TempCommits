@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -186,12 +187,33 @@ public class Test2 {
 		}
 	}
 
-	static String readFile(String path, Charset encoding) 
-			throws IOException 
-	{
-		byte[] encoded = Files.readAllBytes(Paths.get(path));
-		return new String(encoded, encoding);
+	/*
+	 * Read a file and store as a string
+	 * @ http://stackoverflow.com/questions/16027229/reading-from-a-text-file-and-storing-in-a-string
+	 */
+	
+	public static String readFile(String fileName) throws IOException {
+	    BufferedReader br = new BufferedReader(new FileReader(fileName));
+	    try {
+	        StringBuilder sb = new StringBuilder();
+	        String line = br.readLine();
+
+	        while (line != null) {
+	            sb.append(line);
+	            sb.append("\n");
+	            line = br.readLine();
+	        }
+	        return sb.toString();
+	    } finally {
+	        br.close();
+	    }
 	}
+//	static String readFile(String path, Charset encoding) 
+//			throws IOException 
+//	{
+//		byte[] encoded = Files.readAllBytes(Paths.get(path));
+//		return new String(encoded, encoding);
+//	}
 
 	public static DataCollector getTypesFromBaker(String source) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
 		String response = null;
@@ -291,14 +313,17 @@ public class Test2 {
 		return("convertClasstoPackage:: Package not found!!");
 	}
 	
+	/*
+	 * Given a class name find the package it is associated to.
+	 */	
 	static String convertClasstoPackage2(String className) {
 
 	     try {
 	        Class cls = Class.forName(className);
 	         
 	        // returns the name and package of the class
-	        System.out.println("Class = " + cls.getName());
-	        System.out.println("Package = " + cls.getPackage().getName());
+	       // System.out.println("Class = " + cls.getName());
+	       // System.out.println("Package = " + cls.getPackage().getName());
 	        return cls.getPackage().getName();
 	     }
 	     catch(ClassNotFoundException ex) {
@@ -338,7 +363,7 @@ public class Test2 {
 					ASTNode temp =(ASTNode)node;
 					while(temp.getNodeType() != ASTNode.METHOD_DECLARATION)
 						temp=(ASTNode)temp.getParent();
-					System.out.println(((MethodDeclaration)temp).getName());
+					//System.out.println(((MethodDeclaration)temp).getName());
 					if(returnName.contains(((MethodDeclaration)temp).getName().toString())==false)
 						returnName.add(((MethodDeclaration)temp).getName().toString());
 				}
@@ -409,7 +434,7 @@ public class Test2 {
 
 		root.accept(new ASTVisitor() {
 			public boolean visit(ImportDeclaration node){
-				System.out.println(node.getName().getFullyQualifiedName());
+				//System.out.println(node.getName().getFullyQualifiedName());
 				return true;
 			}
 			public boolean visit(VariableDeclarationFragment node) {
@@ -447,13 +472,13 @@ public class Test2 {
 								ASTNode temp = (ASTNode)node;
 								while(temp.getNodeType() != ASTNode.VARIABLE_DECLARATION_STATEMENT)
 									temp=temp.getParent();
-								returnDeclared.add(new Variables(node.getName().toString(),"variable",((VariableDeclarationStatement) temp).getType().toString(),"","NA",root.getLineNumber(temp.getStartPosition())));
+								returnDeclared.add(new Variables(node.getName().toString(),"variable",((VariableDeclarationStatement) temp).getType().resolveBinding().getQualifiedName(),"","NA",root.getLineNumber(temp.getStartPosition())));
 							}
 							return false;
 						}
 						public boolean visit(SingleVariableDeclaration node) {
 							if(node.resolveBinding() != null){
-								returnDeclared.add(new Variables(node.getName().toString(),"variable",node.getType().toString(),"","NA",root.getLineNumber(node.getStartPosition())));
+								returnDeclared.add(new Variables(node.getName().toString(),"variable",node.getType().resolveBinding().getQualifiedName(),"","NA",root.getLineNumber(node.getStartPosition())));
 							}
 							return false;
 						}
@@ -463,7 +488,7 @@ public class Test2 {
 									ASTNode temp = (ASTNode)node;
 									while(temp.getNodeType() != ASTNode.VARIABLE_DECLARATION_STATEMENT)
 										temp=temp.getParent();
-									returnDeclared.add(new Variables(node.getName().toString(),"variable",((VariableDeclarationStatement) temp).getType().toString(),"","NA",root.getLineNumber(temp.getStartPosition())));
+									returnDeclared.add(new Variables(node.getName().toString(),"variable",((VariableDeclarationStatement) temp).getType().resolveBinding().getQualifiedName(),"","NA",root.getLineNumber(temp.getStartPosition())));
 								}
 							}
 							return false;
@@ -473,17 +498,17 @@ public class Test2 {
 				return false;
 			}
 		});
-		//		for(Variables element:returnDeclared){
-		//			System.out.println("------------------------------------");
-		//			System.out.println(element.name);
-		////			System.out.println(element.type);
-		//			System.out.println(element.variableType);
-		////			System.out.println(element.packageImport);
-		////			System.out.println(element.returnType);	
-		////			System.out.println(element.lineNumber);
-		//			System.out.println(element.lineNumber);
-		////			System.out.println("------------------------------------");
-		//		}
+//				for(Variables element:returnDeclared){
+//					System.out.println(">>>>>>>>>>>>>>>>>>>>>>>------------------------------------");
+//					System.out.println(element.name);
+//		//			System.out.println(element.type);
+//					System.out.println(element.variableType);
+//		//			System.out.println(element.packageImport);
+//		//			System.out.println(element.returnType);	
+//		//			System.out.println(element.lineNumber);
+//					System.out.println(element.lineNumber);
+//		//			System.out.println("------------------------------------");
+//				}
 		return returnDeclared;
 	}
 
@@ -922,7 +947,7 @@ public class Test2 {
 			root.accept(new ASTVisitor() {
 				public boolean visit(SimpleName node) {
 					if(node.toString().equals(element.name)){
-						if(element.lineNumber < root.getLineNumber(node.getStartPosition()) || element.lineNumber == -1 )
+						if(element.lineNumber > root.getLineNumber(node.getStartPosition()) || element.lineNumber == -1 )
 							element.lineNumber = root.getLineNumber(node.getStartPosition());
 						return true;
 					}
@@ -1132,24 +1157,8 @@ public class Test2 {
 
 	}
 
-	public static void Test5(){
-		String source = "import java.util.ArrayList;\n"
-				+ "import java.util.List;\n"
-				+ "\n"
-				+ "class abc{\n"
-				+ "public void test(){\n"
-				+ "if(cn == null){\n"
-				+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
-				+ "Class.forName(driver); \n"
-				+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
-				+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
-				+ "System.out.println(\"test\");\n"
-				+ "}\n"
-				+ "}\n"
-				+ "public void test2(){\n"
-				+ "int a,b,c,d;\n"
-				+ "}\n"
-				+ "}\n";
+	public static void Test5() throws IOException{
+		String source = readFile("Snippet.txt");
 		DataCollector data = null;
 
 		List<Variables> undeclaredVariables = checkVariableDeclaration(source);
@@ -1177,39 +1186,43 @@ public class Test2 {
 		undeclaredVariables = fillUndeclaredVariablesFromBaker(data,undeclaredVariables);
 		undeclaredVariables = mergeExpressionCollector(returnValue,undeclaredVariables,source);
 		undeclaredVariables = getInformationFromParameter(returnValue,undeclaredVariables,source);
+		undeclaredVariables = fillLineNumber(undeclaredVariables, source);
 
 
-		for(Variables element:undeclaredVariables){
-			System.out.println("-----------------###----------------");
-			System.out.println(element.name);
-			System.out.println(element.type);
-			System.out.println(element.variableType);
-			System.out.println(element.packageImport);
-			//			System.out.println(element.returnType);	
-			//			System.out.println(element.lineNumber);
-			System.out.println(element.lineNumber);
-			//			System.out.println("------------------------------------");
-		}
-		//		for(Variables element:undeclaredVariables){
-		//			if(element.type == "variable"){
-		//				System.out.println("#####################################");
-		//				System.out.println(element.name);
-		//				List<Variables> temp =new ArrayList<Variables>(); 
-		//				String methodName = getVariablesInScope(source, element.name);
-		//				temp = getVariablesAndImport(source,methodName );
-		//				for(Variables e:temp){
+//		for(Variables element:undeclaredVariables){
+//			System.out.println("-----------------###----------------");
+//			System.out.println(element.name);
+//			System.out.println(element.type);
+//			System.out.println(element.variableType);
+//			System.out.println(element.packageImport);
+//			//			System.out.println(element.returnType);	
+//			//			System.out.println(element.lineNumber);
+//			System.out.println(element.lineNumber);
+//			//			System.out.println("------------------------------------");
+//		}
+				for(Variables element:undeclaredVariables){
+					if(element.type == "variable"){
+						System.out.println("#####################################");
+						System.out.println("Undeclared Variables: " +element.name + " , " + element.variableType);
+						List<Variables> declaredVariables =new ArrayList<Variables>(); 
+						String methodName = getVariablesInScope(source, element.name);
+						declaredVariables = getVariablesAndImport(source,methodName );
+						declaredVariables = fillLineNumber(declaredVariables, source);
+						System.out.println("Possible Options : ");
+						for(Variables e:declaredVariables)
+							if(e.variableType.equals(element.variableType) == true){
+							System.out.println("------------------------------------");
+							System.out.println(e.name);
+		//					System.out.println(element.type);
+							System.out.println(e.variableType);
+		//					System.out.println(element.packageImport);
+		//					System.out.println(element.returnType);	
+		//					System.out.println(element.lineNumber);
+							System.out.println(e.lineNumber);
 		//					System.out.println("------------------------------------");
-		//					System.out.println(e.name);
-		////					System.out.println(element.type);
-		//					System.out.println(e.variableType);
-		////					System.out.println(element.packageImport);
-		////					System.out.println(element.returnType);	
-		////					System.out.println(element.lineNumber);
-		//					System.out.println(e.lineNumber);
-		////					System.out.println("------------------------------------");
-		//				}
-		//			}
-		//		}
+							}
+					}
+				}
 	}
 	public static void Test6(){
 		DataCollector data =  null;
@@ -1236,7 +1249,13 @@ public class Test2 {
 				returnValue.stream().forEach(p->p.printData());
 			
 	}
-	public static void main(String args[]) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+	static void Test7() throws IOException{
+		String source = readFile("Snippet.txt");
+		System.out.println(source);
+	}
+	
+	
+	public static void main(String args[]) throws InterruptedException, IOException{
 
 		//checkVariableDeclaration();
 		//		getVariableTypeFromDeclaration();

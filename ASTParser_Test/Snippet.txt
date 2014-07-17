@@ -15,4 +15,3 @@ public void test2(){
 	int a,b,c,d;
 	}
 }
-
