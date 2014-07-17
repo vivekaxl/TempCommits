@@ -51,6 +51,18 @@ public class ExpressionCollector {
 	String returnType;
 	String arguments;
 	List<String> returnTypeList;
+	public List<String> getReturnTypeList() {
+		return returnTypeList;
+	}
+	public void setReturnTypeList(List<String> returnTypeList) {
+		this.returnTypeList = returnTypeList;
+	}
+	public List<String> getArgumentList() {
+		return argumentList;
+	}
+	public void setArgumentList(List<String> argumentList) {
+		this.argumentList = argumentList;
+	}
 	List<String> argumentList;
 	
 	public void printData(){

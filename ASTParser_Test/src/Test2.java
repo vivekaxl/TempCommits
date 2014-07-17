@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -91,6 +92,7 @@ public class Test2 {
 		List<?> list= list2;
 		for (int i = 0; i < list.size();  i++) 
 			System.out.print(list2.get(i)+"\n");
+		System.out.println();
 	}
 
 
@@ -915,13 +917,101 @@ public class Test2 {
 		return undeclaredVariables;
 	}
 
-	static List<Variables> mergeExpressionCollector(List<ExpressionCollector>ec, List<Variables>undeclaredVariables){
+	static List<Variables> mergeExpressionCollector(List<ExpressionCollector>ec, List<Variables>undeclaredVariables, String source){
 		for(Variables element: undeclaredVariables){
 			for(ExpressionCollector e:ec){
 				//System.out.println("mergeExpressionCollector:" + element.name + " , " + e.getVariableName());
 				if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==false) && (e.getReturnType().equals("unresolved") ==false)){
 					element.variableType = e.getReturnType();
-					element.packageImport = convertClasstoPackage2(element.variableType.replace(" ",""));
+					element.packageImport = convertClasstoPackage2(element.variableType.replace(" ",""));	
+				}
+			}
+		}
+		return undeclaredVariables;
+	}
+	
+	public static Integer countList(List<Integer> list, Integer element){
+		Integer count=0;
+		for(Integer e:list)
+			if(e==element)
+				count++;
+		return count;
+	}
+	
+	
+	static List<Variables> getInformationFromParameter(List<ExpressionCollector>ec, List<Variables>undeclaredVariables, String source){
+		for(Variables element: undeclaredVariables){
+			for(ExpressionCollector e:ec){
+				//The type of element which was a undeclared variable before and the return type is not confused (can be more than one type) or unresolved
+				if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==false) && (e.getReturnType().equals("unresolved") ==false)){
+    				//TODO: try to find variable types from API signature returned by Baker
+					if(e.getArgumentList()!= null && e.getArgumentList().size()>=1){ //Argument has more than or equal to one option
+						System.out.println("getInformationFromParameter Expression :: " +e.getExpression());
+						//find all the variables in the expression
+						final CompilationUnit root = parseStatementsCompilationUnit(source);
+						root.accept(new ASTVisitor() {
+							public boolean visit(MethodInvocation node) { //it has to be a method invocation
+								System.out.println("getInformationFromParameter : " + node.toString());
+								if(e.getExpression().contains(node.getName().toString())==true){ //find the method invocation node which contains the expression
+										System.out.println("getInformationFromParameter Found Expression :: " + node.arguments()); //argument of the method invocation
+										int count =0;
+										List<String> codeArguments = new ArrayList<String>();
+										for(SimpleName name: (List<SimpleName>)node.arguments()){
+											count++;
+											System.out.println("getInformationFromParameter Test 1 "+ name.toString());
+											for(Variables tempElement: undeclaredVariables){ 
+												if(tempElement.name.equals(name.toString())==true){//checking if the arguments are undeclared variables
+													if(tempElement.variableType != "") //variable type of the undeclared Variable was resolved using fillUndeclaredVariablesFromBaker()
+														codeArguments.add(tempElement.variableType);
+													else
+														codeArguments.add("X"); //if it has been not resolved add 'X' to the array
+													System.out.println("getInformationFromParameter : tempElement.name : " + tempElement.name + ", tempElement.variableType : "+ tempElement.variableType + ", argument number : " + count) ;
+												}
+											}
+										}
+										System.out.println("Code Arguments >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+										printList(codeArguments);
+										System.out.println("Expression Collector Arguments >>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+										//Trying to see if some already resolved parameters can be used to find other parameters using resolved API
+										List <Integer> similarity = new ArrayList<Integer>();
+										for(String argument: e.getArgumentList()){
+											List <String> expressionCollectorArg = Arrays.asList(argument.replace(" ", "").split("\\,"));
+											printList(expressionCollectorArg);
+											if(codeArguments.size() != expressionCollectorArg.size()){
+												System.out.println("getInformationFromParameter: Something is wrong!!");
+												return false;
+											}
+											else{
+												int matches=0;
+												for(int counter = 0; counter < codeArguments.size(); counter++) {
+													System.out.println("getInformationFromParameter:codeArgument "+codeArguments.get(counter));
+													if(codeArguments.get(counter).equals(expressionCollectorArg.get(counter)) == true){
+														System.out.println("getInformationFromParameter: For " +e.getExpression() + "argument number " + counter + " matches");
+														matches++;
+													}
+										       }
+											   similarity.add(matches); //Find out how many signature matches (matches <= codeArguments.size() and matches <= expressionCollectorArg.size())
+											}
+										}
+										System.out.println("Maximum similarity : " +(float)Collections.max(similarity)/codeArguments.size());
+										System.out.println("Collisions: "+ countList(similarity, Collections.max(similarity)));
+										if(countList(similarity, Collections.max(similarity)) == 1){
+											int counter = 0;
+											for(SimpleName name: (List<SimpleName>)node.arguments()){
+												counter++;
+												for(Variables tempElement: undeclaredVariables){
+													if(tempElement.name.equals(name.toString())==true){
+														String temp = (e.getArgumentList().get(similarity.indexOf(Collections.max(similarity))));
+														tempElement.variableType = temp.replace(" ", "").split("\\,")[counter-1];
+													}
+												}
+											}
+										}
+									}
+								return true;
+							}
+						});
+					}
 				}
 			}
 		}
@@ -1034,7 +1124,7 @@ public class Test2 {
 				+ "if(cn == null){\n"
 				+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
 				+ "Class.forName(driver); \n"
-				+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
+				+ "dbUser = \"jdbc:mysql://\"+dbHost;\n"
 				+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
 				+ "System.out.println(\"test\");\n"
 				+ "}\n"
@@ -1068,7 +1158,8 @@ public class Test2 {
 			//			System.out.println("------------------------------------");
 		}*/
 		undeclaredVariables = fillUndeclaredVariablesFromBaker(data,undeclaredVariables);
-		undeclaredVariables = mergeExpressionCollector(returnValue,undeclaredVariables);
+		undeclaredVariables = mergeExpressionCollector(returnValue,undeclaredVariables,source);
+		undeclaredVariables = getInformationFromParameter(returnValue,undeclaredVariables,source);
 
 
 		for(Variables element:undeclaredVariables){
