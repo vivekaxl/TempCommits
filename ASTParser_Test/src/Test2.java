@@ -677,6 +677,19 @@ public class Test2 {
 		return source;	
 	}
 
+	static List<String> findElementsInfixExpression(InfixExpression node){
+		List<String> returnValue = new ArrayList<String>();
+		System.out.println("findElementsInfixExpression >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		if(node!=null){
+			returnValue.add(node.getLeftOperand().toString());
+			returnValue.add(node.getRightOperand().toString());
+			List<Expression> extendedOperands = node.extendedOperands();
+			for (Expression element : extendedOperands) {
+				returnValue.add(element.toString());
+			}
+		}
+		return returnValue;
+	}
 	static List<ExpressionCollector> findLeftNodeType(DataCollector data, String tempString){
 
 		//		String source = "if(cn == null){\n"
@@ -703,7 +716,7 @@ public class Test2 {
 		for(Expression e: expressionStatement){
 			Expression node = e;
 //			System.out.println("findLeftNodeType expression :: " + node.toString());
-			node.accept(new ASTVisitor(){
+			node.accept(new ASTVisitor(){/*
 				public boolean visit(MethodInvocation node){
 					int noArguments=-1;
 					String className = node.getExpression().toString() + "." + node.getName().toString();
@@ -752,7 +765,7 @@ public class Test2 {
 						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), "unresolved","NA"));
 					}
 					return false;
-				}
+				}*/
 				/*
 				 * Would return all the types of the operands in a Infix Expression
 				 * @see org.eclipse.jdt.core.dom.ASTVisitor#visit(org.eclipse.jdt.core.dom.InfixExpression)
@@ -792,8 +805,12 @@ public class Test2 {
 					else if(tempList.size() == 0){
 						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), "unresolved","NA"));
 					}
-					else{
+					else{//tempList.size() ==1 : I am assuming that InfixExpression would have all elements of same type
+						List<String> elementInfix = findElementsInfixExpression(node);
 						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), tempList.get(0),"NA"));
+						for(String element:elementInfix) //No need to check if the element is a part of undeclared variable. Would be checked in mergeExpressionCollector()
+							returnValue.add(new ExpressionCollector(node.toString(),element, tempList.get(0),"NA"));
+						
 					}
 
 					return false;
@@ -946,55 +963,55 @@ public class Test2 {
 				if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==false) && (e.getReturnType().equals("unresolved") ==false)){
     				//TODO: try to find variable types from API signature returned by Baker
 					if(e.getArgumentList()!= null && e.getArgumentList().size()>=1){ //Argument has more than or equal to one option
-						System.out.println("getInformationFromParameter Expression :: " +e.getExpression());
+						//System.out.println("getInformationFromParameter Expression :: " +e.getExpression());
 						//find all the variables in the expression
 						final CompilationUnit root = parseStatementsCompilationUnit(source);
 						root.accept(new ASTVisitor() {
 							public boolean visit(MethodInvocation node) { //it has to be a method invocation
-								System.out.println("getInformationFromParameter : " + node.toString());
+								//System.out.println("getInformationFromParameter : " + node.toString());
 								if(e.getExpression().contains(node.getName().toString())==true){ //find the method invocation node which contains the expression
 										System.out.println("getInformationFromParameter Found Expression :: " + node.arguments()); //argument of the method invocation
 										int count =0;
 										List<String> codeArguments = new ArrayList<String>();
 										for(SimpleName name: (List<SimpleName>)node.arguments()){
 											count++;
-											System.out.println("getInformationFromParameter Test 1 "+ name.toString());
+											//System.out.println("getInformationFromParameter Test 1 "+ name.toString());
 											for(Variables tempElement: undeclaredVariables){ 
 												if(tempElement.name.equals(name.toString())==true){//checking if the arguments are undeclared variables
 													if(tempElement.variableType != "") //variable type of the undeclared Variable was resolved using fillUndeclaredVariablesFromBaker()
 														codeArguments.add(tempElement.variableType);
 													else
 														codeArguments.add("X"); //if it has been not resolved add 'X' to the array
-													System.out.println("getInformationFromParameter : tempElement.name : " + tempElement.name + ", tempElement.variableType : "+ tempElement.variableType + ", argument number : " + count) ;
+													//System.out.println("getInformationFromParameter : tempElement.name : " + tempElement.name + ", tempElement.variableType : "+ tempElement.variableType + ", argument number : " + count) ;
 												}
 											}
 										}
-										System.out.println("Code Arguments >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-										printList(codeArguments);
-										System.out.println("Expression Collector Arguments >>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+										//System.out.println("Code Arguments >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+										//printList(codeArguments);
+										//System.out.println("Expression Collector Arguments >>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 										//Trying to see if some already resolved parameters can be used to find other parameters using resolved API
 										List <Integer> similarity = new ArrayList<Integer>();
 										for(String argument: e.getArgumentList()){
 											List <String> expressionCollectorArg = Arrays.asList(argument.replace(" ", "").split("\\,"));
-											printList(expressionCollectorArg);
+											//printList(expressionCollectorArg);
 											if(codeArguments.size() != expressionCollectorArg.size()){
-												System.out.println("getInformationFromParameter: Something is wrong!!");
+												//System.out.println("getInformationFromParameter: Something is wrong!!");
 												return false;
 											}
 											else{
 												int matches=0;
 												for(int counter = 0; counter < codeArguments.size(); counter++) {
-													System.out.println("getInformationFromParameter:codeArgument "+codeArguments.get(counter));
+													//System.out.println("getInformationFromParameter:codeArgument "+codeArguments.get(counter));
 													if(codeArguments.get(counter).equals(expressionCollectorArg.get(counter)) == true){
-														System.out.println("getInformationFromParameter: For " +e.getExpression() + "argument number " + counter + " matches");
+														//System.out.println("getInformationFromParameter: For " +e.getExpression() + "argument number " + counter + " matches");
 														matches++;
 													}
 										       }
 											   similarity.add(matches); //Find out how many signature matches (matches <= codeArguments.size() and matches <= expressionCollectorArg.size())
 											}
 										}
-										System.out.println("Maximum similarity : " +(float)Collections.max(similarity)/codeArguments.size());
-										System.out.println("Collisions: "+ countList(similarity, Collections.max(similarity)));
+										//System.out.println("Maximum similarity : " +(float)Collections.max(similarity)/codeArguments.size());
+										//System.out.println("Collisions: "+ countList(similarity, Collections.max(similarity)));
 										if(countList(similarity, Collections.max(similarity)) == 1){
 											int counter = 0;
 											for(SimpleName name: (List<SimpleName>)node.arguments()){
@@ -1124,7 +1141,7 @@ public class Test2 {
 				+ "if(cn == null){\n"
 				+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
 				+ "Class.forName(driver); \n"
-				+ "dbUser = \"jdbc:mysql://\"+dbHost;\n"
+				+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
 				+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
 				+ "System.out.println(\"test\");\n"
 				+ "}\n"
