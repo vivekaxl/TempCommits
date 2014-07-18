@@ -46,6 +46,7 @@ import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
@@ -715,6 +716,102 @@ public class Test2 {
 		}
 		return returnValue;
 	}
+	/*
+	 * Trying to resolve parameters from a ExpressionStatement + MethodInvocation
+	 */
+	static List<ExpressionCollector> findTypeParameter(DataCollector data,String tempString){
+		System.out.println("findTypeParameter :: ");
+		List <ExpressionCollector> returnValue = new ArrayList<ExpressionCollector>();
+		List <MethodInvocation> expressionStatements = new ArrayList<MethodInvocation>();
+		List<String> returnBakerReturnType = new ArrayList<String>();
+		List<String> returnBakerArguements = new ArrayList<String>();
+		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
+		//Find all the ExpressionStatement node and then look for method invocation which doesn't have an assignment sign
+		root.accept(new ASTVisitor() {
+			public boolean visit(ExpressionStatement node) {
+				node.accept(new ASTVisitor(){
+					public boolean visit(MethodInvocation node){
+						ASTNode temp=node;
+						while(temp.getParent() != null){
+							if(temp.getNodeType() == ASTNode.ASSIGNMENT)
+								return false;
+							temp=temp.getParent();
+						}
+						System.out.println("1");
+						int noArguments=-1;
+						expressionStatements.add(node);
+						String className = node.getExpression().toString() + "." + node.getName().toString();
+//						System.out.println("2"+node.getExpression().resolveTypeBinding());
+						System.out.println("1" + className);
+//						if(node.resolveMethodBinding() != null)
+//							System.out.println("1" + node.resolveMethodBinding().toString());
+						noArguments = node.arguments().size();
+						//Find from baker what is the api this corresponds to
+						List<String> elementBaker= elementsMatchFromBaker(data,className);
+						printList(elementBaker);
+						System.out.println("Number of arguments: " + noArguments);
+						System.out.println("Number of matching elements from Baker : " + elementBaker.size());
+						
+						//extra checking: checking if the arguments match (between baker elements and code)
+						String tempElements = null;
+						for(String e:elementBaker){
+							if((StringUtils.countMatches(e, ",") +1) != noArguments){
+								System.out.println("Somethings wrong!");
+								elementBaker.remove(e);
+							}
+							else{
+								Pattern pattern = Pattern.compile("\\(([^\"]*)\\)");
+								Matcher m = pattern.matcher(e);
+								if (m.find()){ 
+									tempElements = m.group(1);
+								}
+								if(returnBakerArguements.contains(tempElements)==false){
+									returnBakerArguements.add(tempElements);
+									System.out.println(tempElements);
+								}
+									
+							}
+						}
+						System.out.println("returnBakerArguements.size() : " + returnBakerArguements.size());
+						if(returnBakerArguements.size() == 1){
+							System.out.println("Precision is 1");
+							System.out.println(returnBakerArguements);
+							String[] arg = returnBakerArguements.get(0).split("\\,");
+							int count=0;
+							for(Expression e2:(List<Expression>)node.arguments()){
+								System.out.println("Test: " + e2.toString());
+								returnValue.add(new ExpressionCollector(node.toString(),e2.toString(),arg[count++].replace(" ", ""),""));
+							}
+						}
+						else{
+							//TODO: Need to make a field in ExpressionCollector which would store all the possible types for a variable.
+							System.out.println("Precision is >1");
+							int count=0;
+							for(int i=0;i<noArguments;i++){
+								List<String> tempList = new ArrayList<String>();
+								for(String bakerelement:returnBakerArguements){
+									tempList.add(bakerelement.split("\\,")[count]);
+								}
+								returnValue.add(new ExpressionCollector(node.toString(),node.arguments().get(count).toString(),"confused","",tempList,null));
+							}
+						}
+						printList(returnBakerArguements);	
+						
+						
+						return false;
+					}
+				});
+				
+				return true;	
+			}
+		});
+		//returnValue.stream().forEach(p->System.out.println(p.getVariableName()+ " , "+p.getReturnType()));
+		
+		
+		
+		return returnValue;
+	}
+	
 	static List<ExpressionCollector> findLeftNodeType(DataCollector data, String tempString){
 
 		//		String source = "if(cn == null){\n"
@@ -740,14 +837,14 @@ public class Test2 {
 		});
 		for(Expression e: expressionStatement){
 			Expression node = e;
-//			System.out.println("findLeftNodeType expression :: " + node.toString());
-			node.accept(new ASTVisitor(){/*
+			System.out.println("findLeftNodeType expression :: " + node.toString());
+			node.accept(new ASTVisitor(){
 				public boolean visit(MethodInvocation node){
 					int noArguments=-1;
 					String className = node.getExpression().toString() + "." + node.getName().toString();
-					//System.out.println(node.getName().toString());
-//					System.out.println("findLeftNodeType arguements :: "+node.arguments());
-//					System.out.println("findLeftNodeType arguements size :: "+node.arguments().size());
+//					System.out.println(node.getName().toString());
+//					System.out.println("findLeftNodeType arguments :: "+node.arguments());
+//					System.out.println("findLeftNodeType arguments size :: "+node.arguments().size());
 					noArguments = node.arguments().size();
 					//Find from baker what is the api this corresponds to
 					List<String> elementBakerReturnType = elementsMatchFromBaker(data,className);
@@ -790,7 +887,7 @@ public class Test2 {
 						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), "unresolved","NA"));
 					}
 					return false;
-				}*/
+				}
 				/*
 				 * Would return all the types of the operands in a Infix Expression
 				 * @see org.eclipse.jdt.core.dom.ASTVisitor#visit(org.eclipse.jdt.core.dom.InfixExpression)
@@ -960,12 +1057,15 @@ public class Test2 {
 	}
 
 	static List<Variables> mergeExpressionCollector(List<ExpressionCollector>ec, List<Variables>undeclaredVariables, String source){
+		//System.out.println("mergeExpressionCollector :: >>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		//ec.stream().forEach(p->p.printData());
 		for(Variables element: undeclaredVariables){
 			for(ExpressionCollector e:ec){
 				//System.out.println("mergeExpressionCollector:" + element.name + " , " + e.getVariableName());
 				if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==false) && (e.getReturnType().equals("unresolved") ==false)){
 					element.variableType = e.getReturnType();
 					element.packageImport = convertClasstoPackage2(element.variableType.replace(" ",""));	
+					//System.out.println(element.name + " , " + element.variableType + " , " + element.packageImport);
 				}
 			}
 		}
@@ -1169,7 +1269,9 @@ public class Test2 {
 			e.printStackTrace();
 		}
 		System.out.println("Done!");
+		List<ExpressionCollector>returnValue2 = findTypeParameter(data,source); //MethodInvocation as expression
 		List<ExpressionCollector>returnValue =  findLeftNodeType(data,source); //Assignment
+		returnValue.addAll(returnValue2);
 		returnValue.stream().forEach(p->p.printData());
 		/*
 		for(Variables element:undeclaredVariables){
@@ -1208,7 +1310,7 @@ public class Test2 {
 						String methodName = getVariablesInScope(source, element.name);
 						declaredVariables = getVariablesAndImport(source,methodName );
 						declaredVariables = fillLineNumber(declaredVariables, source);
-						System.out.println("Possible Options : ");
+						System.out.println("Possible Options : (Which variables can be substituted)");
 						for(Variables e:declaredVariables)
 							if(e.variableType.equals(element.variableType) == true){
 							System.out.println("------------------------------------");
@@ -1249,6 +1351,7 @@ public class Test2 {
 				returnValue.stream().forEach(p->p.printData());
 			
 	}
+	//Check read File
 	static void Test7() throws IOException{
 		String source = readFile("Snippet.txt");
 		System.out.println(source);
