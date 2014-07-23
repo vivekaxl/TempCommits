@@ -144,11 +144,24 @@ public class MainMethod {
     public static String changeToInnerClass(String className){
     	return "/" + className.replace(".", "/") + ".class";
     }
-    public static void main(String[] args) throws IOException{
+    
+    public static void Test1() throws IOException{
     	String classA = "java.lang.String";
     	String classB = "java.util.ArrayList";
     	int distance = Math.max(findDistance(changeToInnerClass(classA),changeToInnerClass(classB)),findDistance(changeToInnerClass(classB),changeToInnerClass(classA)));
     	System.out.println("Distance between " + classA + " and " +classB +" is :: " + distance);
+    }
+    
+    public static void Test2() throws IOException{
+    	String classA = "java.util.AbstractCollection";
+    	String classB = "java.util.ArrayList";
+    	int distance = Math.max(findDistance(changeToInnerClass(classA),changeToInnerClass(classB)),findDistance(changeToInnerClass(classB),changeToInnerClass(classA)));
+    	System.out.println("Distance between " + classA + " and " +classB +" is :: " + distance);
+    }
+    public static void main(String[] args) throws IOException{
+    	Test1();
+    	System.out.println();
+    	Test2();
     }
 	
 
