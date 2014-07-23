@@ -26,7 +26,9 @@ public class MainMethod {
      * @param args
      * @throws IOException 
      */
-	
+	/*
+	*return -1 if the classes are not related or the distance if related.
+	*/
     public static int findDistance(String classA, String classB) throws IOException {
     	List<String> superClass = new ArrayList<String>();
         ClassVisitor cl=new ClassVisitor(Opcodes.ASM4) {
