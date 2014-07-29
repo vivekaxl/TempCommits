@@ -1303,26 +1303,36 @@ public class Test2 {
 //			//			System.out.println("------------------------------------");
 //		}
 				for(Variables element:undeclaredVariables){
+					
 					if(element.type == "variable"){
+						int count=0;
 						System.out.println("#####################################");
 						System.out.println("Undeclared Variables: " +element.name + " , " + element.variableType);
 						List<Variables> declaredVariables =new ArrayList<Variables>(); 
 						String methodName = getVariablesInScope(source, element.name);
 						declaredVariables = getVariablesAndImport(source,methodName );
 						declaredVariables = fillLineNumber(declaredVariables, source);
-						System.out.println("Possible Options : (Which variables can be substituted)");
+						
 						for(Variables e:declaredVariables)
-							if(e.variableType.equals(element.variableType) == true){
-							System.out.println("------------------------------------");
-							System.out.println(e.name);
-		//					System.out.println(element.type);
-							System.out.println(e.variableType);
-		//					System.out.println(element.packageImport);
-		//					System.out.println(element.returnType);	
-		//					System.out.println(element.lineNumber);
-							System.out.println(e.lineNumber);
-		//					System.out.println("------------------------------------");
+							if((e.variableType.replace(" ", "")).equals((element.variableType).replace(" ", "")) == true){
+								System.out.println("Possible Options : (Which variables can be substituted)");
+								System.out.println("------------------------------------");
+								System.out.println(e.name);
+			//					System.out.println(element.type);
+								System.out.println(e.variableType);
+			//					System.out.println(element.packageImport);
+			//					System.out.println(element.returnType);	
+			//					System.out.println(element.lineNumber);
+								System.out.println(e.lineNumber);
+			//					System.out.println("------------------------------------");
+								count++;
 							}
+						if(count==0)
+							System.out.println("Variable " + element.name +" needs declaration of type " + element.variableType );
+					}
+					else if(element.type == "type" && element.packageImport != ""){
+						System.out.println("#####################################");
+						System.out.println("Add Imports : " +element.packageImport + " "+element.name);
 					}
 				}
 	}
@@ -1351,11 +1361,7 @@ public class Test2 {
 				returnValue.stream().forEach(p->p.printData());
 			
 	}
-	//Check read File
-	static void Test7() throws IOException{
-		String source = readFile("Snippet.txt");
-		System.out.println(source);
-	}
+
 	
 	
 	public static void main(String args[]) throws InterruptedException, IOException{

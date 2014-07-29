@@ -5,5 +5,6 @@
 	<classpathentry kind="lib" path="core.jar"/>
 	<classpathentry kind="lib" path="ritaWN.jar"/>
 	<classpathentry kind="lib" path="supportWN.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/Downloads/simmetrics_jar_v1_6_2_d07_02_07.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>

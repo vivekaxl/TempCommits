@@ -1,14 +1,14 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Connection;
 
-class abc{
-public void test(){
-	String strJSON = ""; // your string goes here
-	JSONArray jArray = (JSONArray) new JSONTokener(strJSON).nextValue();
-	// once you get the array, you may check items like
-	JSONOBject jObject = jArray.getJSONObject(0);
-}
-public void test2(){
-	int a,b,c,d;
+public class ConnectionProvider {
+	public static Connection getConnection() throws SQLException{
+		Connection conn = null;
+		if(cn == null){
+		    String driver = "com.mysql.jdbc.Driver";
+		    Class.forName(driver);
+		    dbHost = "jdbc:mysql://"+dbHost;
+		    dbUser = "SmartCopyUser";
+		    cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);
+		}
 	}
 }

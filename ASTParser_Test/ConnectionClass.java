@@ -7,9 +7,7 @@ public class ConnectionProvider {
 		    String driver = "com.mysql.jdbc.Driver";
 		    Class.forName(driver);
 		    dbHost = "jdbc:mysql://"+dbHost;
-		    dbUser = "SmartCopyUser";
 		    cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);
 		}
 	}
 }
-
