@@ -1,14 +1,15 @@
-import java.sql.Connection;
+package com.machinemode.imspire.domain;
+public class Request { private Request() { }
 
-public class ConnectionProvider {
-	public static Connection getConnection() throws SQLException{
-		Connection conn = null;
-		if(cn == null){
-		    String driver = "com.mysql.jdbc.Driver";
-		    Class.forName(driver);
-		    dbHost = "jdbc:mysql://"+dbHost;
-		    dbUser = "SmartCopyUser";
-		    cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);
-		}
-	}
+public static String buildRequest(String uri, String api_key, String format,
+        RequestParams params)
+{
+    StringBuilder stringBuilder = new StringBuilder();
+    b.append(string1);
+    b.append(string2);
+    string1 = b.toString();
+
+
+    return stringBuilder.toString();
+}
 }

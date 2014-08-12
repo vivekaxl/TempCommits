@@ -539,6 +539,7 @@ public class Test2 {
 		IProblem[] problems = root.getProblems();
 		if (problems != null && problems.length > 0) {
 			for (IProblem problem : problems) {
+				System.out.println(problem.getMessage());
 				if(problem.getID() == IProblem.UnresolvedVariable){
 					if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
 						returnUndeclared.add(new Variables(problem.getArguments()[0],"variable","","NA"));
@@ -549,7 +550,7 @@ public class Test2 {
 				}
 				else if(problem.getID() == IProblem.UndefinedName){
 					if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
-						returnUndeclared.add(new Variables(problem.getArguments()[0],"name","NA",convertClasstoPackage(problem.getArguments()[0])));
+						returnUndeclared.add(new Variables(problem.getArguments()[0],"variable","","NA"));
 				}
 				else{
 					;
@@ -717,6 +718,69 @@ public class Test2 {
 		return returnValue;
 	}
 	/*
+	 * Resolve types of objects which are not resolved
+	 * */
+	static List<ExpressionCollector> findExpressionStatement(DataCollector data,String tempString){
+		List <ExpressionCollector> returnValue = new ArrayList<ExpressionCollector>();
+		List <MethodInvocation> expressionStatements = new ArrayList<MethodInvocation>();
+		List<String> returnBakerType = new ArrayList<String>();
+		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
+		//Find all the ExpressionStatement node and then look for method invocation which doesn't have an assignment sign
+		root.accept(new ASTVisitor() {
+			public boolean visit(ExpressionStatement node) {
+				node.accept(new ASTVisitor(){
+					public boolean visit(MethodInvocation node){
+						ASTNode temp=node;
+						while(temp.getParent() != null){
+							if(temp.getNodeType() == ASTNode.ASSIGNMENT)
+								return false;
+							temp=temp.getParent();
+						}
+						System.out.println("1");
+						System.out.println(node.getExpression().toString());
+						if(node.getExpression().resolveTypeBinding()==null){
+							int noArguments= node.arguments().size();
+							System.out.println(node.getExpression().toString() + " is not declared");
+							String className = node.getName().toString();
+							List<String> elementBaker= elementsMatchFromBaker(data,className);
+							printList(elementBaker);
+							System.out.println("Number of matching elements from Baker : " + elementBaker.size());
+							//extra checking: checking if the arguments match (between baker elements and code)
+							String tempElements = null;
+							for(String e:elementBaker){
+								System.out.println(noArguments);
+								System.out.println(StringUtils.countMatches(e, ",") +1);
+								System.out.println(e);
+								if((StringUtils.countMatches(e, ",") +1) != noArguments){
+									System.out.println("Somethings wrong!");
+									elementBaker.remove(e);
+								}
+								else{
+									tempElements=e.split("."+className)[0];
+									if(returnBakerType.contains(tempElements)==false){
+										returnBakerType.add(tempElements);
+										System.out.println(tempElements);
+									}
+								}
+							}
+							System.out.println("returnBakerArguements.size() : " + returnBakerType.size());
+							returnValue.add(new ExpressionCollector(node.toString(),node.getExpression().toString(),"confused","",returnBakerType,null));
+							
+							
+						}
+						return false;
+					}					
+				});
+				return false;
+			}
+		});
+		
+		return returnValue;
+	
+	}
+	
+	
+	/*
 	 * Trying to resolve parameters from a ExpressionStatement + MethodInvocation
 	 */
 	static List<ExpressionCollector> findTypeParameter(DataCollector data,String tempString){
@@ -740,6 +804,8 @@ public class Test2 {
 						System.out.println("1");
 						int noArguments=-1;
 						expressionStatements.add(node);
+						if(node.getExpression().resolveTypeBinding() == null)
+							return false;
 						String className = node.getExpression().toString() + "." + node.getName().toString();
 //						System.out.println("2"+node.getExpression().resolveTypeBinding());
 						System.out.println("1" + className);
@@ -982,6 +1048,7 @@ public class Test2 {
 			{
 				for(String tempElement:temp.elements){
 					if(tempElement.contains(className) == true){
+						System.out.println("ElementsMatchFromBaker:: " + tempElement);
 						returnMethodName.add(tempElement);
 					}						
 				}
@@ -1269,9 +1336,11 @@ public class Test2 {
 			e.printStackTrace();
 		}
 		System.out.println("Done!");
+		List<ExpressionCollector>returnValue3 = findExpressionStatement(data,source);
 		List<ExpressionCollector>returnValue2 = findTypeParameter(data,source); //MethodInvocation as expression
 		List<ExpressionCollector>returnValue =  findLeftNodeType(data,source); //Assignment
 		returnValue.addAll(returnValue2);
+		returnValue.addAll(returnValue3);
 		returnValue.stream().forEach(p->p.printData());
 		/*
 		for(Variables element:undeclaredVariables){
@@ -1362,7 +1431,30 @@ public class Test2 {
 			
 	}
 
-	
+	static void Test7(){
+		String source=null;
+		try {
+			source = readFile("Snippet.txt");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		DataCollector data=null;
+		
+		try {
+			data =  getTypesFromBaker(source);
+		} catch (FileNotFoundException | UnsupportedEncodingException| InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Done!");
+		
+		System.out.println("Baker Data =======================");
+		data.printData();
+		
+		List<ExpressionCollector>returnValue3 = findExpressionStatement(data,source);
+		returnValue3.stream().forEach(a->a.printData());
+	}
 	
 	public static void main(String args[]) throws InterruptedException, IOException{
 
