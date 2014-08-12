@@ -896,7 +896,6 @@ public class Test2 {
 		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
 		root.accept(new ASTVisitor() {
 			public boolean visit(Assignment node) {
-				//System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>" + node.toString());
 				expressionStatement.add(node.getRightHandSide());
 				return true;	
 			}
@@ -907,7 +906,11 @@ public class Test2 {
 			node.accept(new ASTVisitor(){
 				public boolean visit(MethodInvocation node){
 					int noArguments=-1;
-					String className = node.getExpression().toString() + "." + node.getName().toString();
+					String className =null;
+					if(node.getExpression().resolveTypeBinding()!=null)
+						className = node.getExpression().toString() + "." + node.getName().toString();
+					else
+						className = node.getName().toString();
 //					System.out.println(node.getName().toString());
 //					System.out.println("findLeftNodeType arguments :: "+node.arguments());
 //					System.out.println("findLeftNodeType arguments size :: "+node.arguments().size());
@@ -931,7 +934,7 @@ public class Test2 {
 							}
 						}
 					}
-//					System.out.println("4-Iamhere"+returnBakerReturnType.size());
+					System.out.println("4-Iamhere"+returnBakerReturnType.size());
 //					System.out.println("5-Iamhere"+returnBakerArguements.size());
 					if(returnBakerReturnType.size() > 1 && returnBakerArguements.size() == 1){
 						System.out.println("findLeftNodeType:: Different API but same parameter");
@@ -944,6 +947,10 @@ public class Test2 {
 					else if(returnBakerReturnType.size() == 1 && returnBakerArguements.size() == 1){
 						System.out.println("findLeftNodeType::Perfect");
 						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), returnBakerReturnType.get(0),returnBakerArguements.get(0)));
+					}
+					else if(returnBakerReturnType.size() == 1 && returnBakerArguements.size() == 0){
+						System.out.println("findLeftNodeType::Perfect");
+						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), returnBakerReturnType.get(0),"NA"));
 					}
 					else if(returnBakerReturnType.size() == 1 && returnBakerArguements.size() > 1){
 						System.out.println("findLeftNodeType::Perfect");
@@ -1048,7 +1055,7 @@ public class Test2 {
 			{
 				for(String tempElement:temp.elements){
 					if(tempElement.contains(className) == true){
-						System.out.println("ElementsMatchFromBaker:: " + tempElement);
+						//System.out.println("ElementsMatchFromBaker:: " + tempElement);
 						returnMethodName.add(tempElement);
 					}						
 				}
