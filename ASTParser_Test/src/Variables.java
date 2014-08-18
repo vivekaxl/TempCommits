@@ -1,19 +1,23 @@
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class Variables {
 	
 	public Variables(String name, String type, String returnType,String packageImport) {
 		this.name = name;
 		this.type = type;
-		this.variableType = "";
+		this.variableType = null;
 		this.returnType = returnType;
 		this.packageImport = packageImport;
 		this.lineNumber=-1;
 	}
 	
 	public Variables(String name, String type,String variableType, String returnType,String packageImport,int lineNumber) {
+		this.variableType = new ArrayList<String>();
 		this.name = name;
 		this.type = type;
-		this.variableType = variableType;
+		this.variableType.add(variableType);
 		this.returnType = returnType;
 		this.packageImport = packageImport;
 		this.lineNumber=lineNumber;
@@ -58,7 +62,7 @@ public class Variables {
 		else
 			this.returnType = "NA";
 	}
-	String variableType;
+	List<String> variableType;
 	String returnType;
 	String packageImport;
 	Integer lineNumber; //first line where the variable was used

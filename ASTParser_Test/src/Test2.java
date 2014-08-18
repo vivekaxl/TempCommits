@@ -37,6 +37,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.ToolFactory;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -56,13 +58,26 @@ import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.TypeLiteral;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
+import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
+import org.eclipse.jdt.core.dom.rewrite.ITrackedNodePosition;
+import org.eclipse.jdt.core.dom.rewrite.ListRewrite;
+import org.eclipse.jdt.core.formatter.CodeFormatter;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.text.edits.MalformedTreeException;
+import org.eclipse.text.edits.TextEdit;
+import org.eclipse.text.edits.UndoEdit;
 
 import test.ExpressionCollector;
 
@@ -1137,8 +1152,13 @@ public class Test2 {
 			for(ExpressionCollector e:ec){
 				//System.out.println("mergeExpressionCollector:" + element.name + " , " + e.getVariableName());
 				if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==false) && (e.getReturnType().equals("unresolved") ==false)){
-					element.variableType = e.getReturnType();
-					element.packageImport = convertClasstoPackage2(element.variableType.replace(" ",""));	
+					element.variableType.add(e.getReturnType());
+					element.packageImport = convertClasstoPackage2(((element.variableType).get(0)).replace(" ",""));	
+					//System.out.println(element.name + " , " + element.variableType + " , " + element.packageImport);
+				}
+				else if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==true) && (e.getReturnType().equals("unresolved") ==false)){
+					element.variableType=e.getReturnTypeList();
+					//element.packageImport = convertClasstoPackage2(((element.variableType).get(0)).replace(" ",""));	
 					//System.out.println(element.name + " , " + element.variableType + " , " + element.packageImport);
 				}
 			}
@@ -1177,8 +1197,8 @@ public class Test2 {
 											//System.out.println("getInformationFromParameter Test 1 "+ name.toString());
 											for(Variables tempElement: undeclaredVariables){ 
 												if(tempElement.name.equals(name.toString())==true){//checking if the arguments are undeclared variables
-													if(tempElement.variableType != "") //variable type of the undeclared Variable was resolved using fillUndeclaredVariablesFromBaker()
-														codeArguments.add(tempElement.variableType);
+													if(tempElement.variableType.size() == 1) //variable type of the undeclared Variable was resolved using fillUndeclaredVariablesFromBaker()
+														codeArguments.add(tempElement.variableType.get(0));
 													else
 														codeArguments.add("X"); //if it has been not resolved add 'X' to the array
 													//System.out.println("getInformationFromParameter : tempElement.name : " + tempElement.name + ", tempElement.variableType : "+ tempElement.variableType + ", argument number : " + count) ;
@@ -1218,7 +1238,7 @@ public class Test2 {
 												for(Variables tempElement: undeclaredVariables){
 													if(tempElement.name.equals(name.toString())==true){
 														String temp = (e.getArgumentList().get(similarity.indexOf(Collections.max(similarity))));
-														tempElement.variableType = temp.replace(" ", "").split("\\,")[counter-1];
+														tempElement.variableType.add(temp.replace(" ", "").split("\\,")[counter-1]);
 													}
 												}
 											}
@@ -1249,6 +1269,109 @@ public class Test2 {
 				}
 			}
 			return undeclaredVariables;
+	}
+	
+	private static void AddStatements(String source)throws MalformedTreeException, BadLocationException, CoreException {
+		 
+		final CompilationUnit root = parseStatementsCompilationUnit(source);
+ 
+		// create a ASTRewrite
+		AST ast = root.getAST();
+		ASTRewrite rewriter = ASTRewrite.create(ast);
+ 
+		// for getting insertion position
+		TypeDeclaration typeDecl = (TypeDeclaration) root.types().get(0);
+		MethodDeclaration methodDecl = typeDecl.getMethods()[0];
+		Block block = methodDecl.getBody();
+ 
+		// create new statements for insertion
+		MethodInvocation newInvocation = ast.newMethodInvocation();
+		newInvocation.setName(ast.newSimpleName("add"));
+		Statement newStatement = ast.newExpressionStatement(newInvocation);
+ 
+		//create ListRewrite
+		ListRewrite listRewrite = rewriter.getListRewrite(block, Block.STATEMENTS_PROPERTY);
+		listRewrite.insertFirst(newStatement, null);
+ 
+		TextEdit edits = rewriter.rewriteAST();
+		IDocument doc = new Document(source);
+		
+		edits.apply(doc);
+		System.out.println(doc.get());
+	}
+	
+	
+	static void rewriteSource(String source){
+		Document document = new org.eclipse.jface.text.Document(source);
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		parser.setSource(document.get().toCharArray());
+		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+
+		final CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+		ASTRewrite rewriter = ASTRewrite.create(cu.getAST());
+		
+		AST ast = cu.getAST();
+		
+		// for getting insertion position
+		TypeDeclaration typeDecl = (TypeDeclaration) cu.types().get(0);
+		MethodDeclaration methodDecl = typeDecl.getMethods()[0];
+		Block block = methodDecl.getBody();
+ 
+		// create new statements for insertion
+		MethodInvocation newInvocation = (MethodInvocation) ast.newMethodInvocation();
+		newInvocation.setName(ast.newSimpleName("add"));
+		Statement newStatement = ast.newExpressionStatement(newInvocation);
+ 
+		//create ListRewrite
+		ListRewrite listRewrite = rewriter.getListRewrite(block, Block.STATEMENTS_PROPERTY);
+		listRewrite.insertFirst(newStatement, null);
+ 
+		TextEdit edits = null;
+		try {
+			edits = rewriter.rewriteAST();
+		} catch (JavaModelException | IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		IDocument doc = new Document(source);
+		
+		try {
+			edits.apply(doc);
+		} catch (MalformedTreeException | BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(doc.get());
+	}
+	
+	static boolean checkReturnStatement(String source, String methodName){
+		final CompilationUnit root = parseStatementsCompilationUnit(source);
+		List<String> returnList = new ArrayList<String>();
+		if(root == null)
+			System.out.println("It's null");
+		root.accept(new ASTVisitor() {
+			public boolean visit(MethodDeclaration node) {
+				if(node.isConstructor() != true && node.getName().toString().equals(methodName) == true){
+				//System.out.println("Method Name: " + node.getName().toString());
+				//System.out.println("Return Type of the MethodDeclaration is :: " +node.getReturnType2().toString());
+				returnList.add(node.getName().toString());
+				node.accept(new ASTVisitor(){
+					public boolean visit(ReturnStatement node1){
+						//System.out.println("Return Type in MethodBody ::  " +node1.getExpression().toString() );
+						returnList.clear();
+						return true;
+					}
+				});
+				return true;
+				}
+				else
+					return false;
+			}
+		});
+		if(returnList.size() == 0)
+			return true;
+		else
+			return false;
 	}
 	
 	static void Test1(){
@@ -1348,6 +1471,7 @@ public class Test2 {
 		List<ExpressionCollector>returnValue =  findLeftNodeType(data,source); //Assignment
 		returnValue.addAll(returnValue2);
 		returnValue.addAll(returnValue3);
+		System.out.println("===================================================================================");
 		returnValue.stream().forEach(p->p.printData());
 		/*
 		for(Variables element:undeclaredVariables){
@@ -1390,7 +1514,7 @@ public class Test2 {
 						declaredVariables = fillLineNumber(declaredVariables, source);
 						
 						for(Variables e:declaredVariables)
-							if((e.variableType.replace(" ", "")).equals((element.variableType).replace(" ", "")) == true){
+							if((e.variableType.get(0).replace(" ", "")).equals((element.variableType.get(0)).replace(" ", "")) == true){
 								System.out.println("Possible Options : (Which variables can be substituted)");
 								System.out.println("------------------------------------");
 								System.out.println(e.name);
@@ -1463,6 +1587,140 @@ public class Test2 {
 		returnValue3.stream().forEach(a->a.printData());
 	}
 	
+	
+	static void Test8() throws MalformedTreeException, BadLocationException, CoreException{
+		String source=null;
+		try {
+			source = readFile("Snippet.txt");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		//checkReturnStatement(source);
+		//rewriteSource(source);
+//
+//		   Document document= new Document(source);
+//
+//		   // creation of DOM/AST from a ICompilationUnit
+//		   CompilationUnit astRoot = parseStatementsCompilationUnit(source);
+//
+//		   // start record of the modifications
+//		   astRoot.recordModifications();
+//
+//		   // modify the AST
+//		   TypeDeclaration typeDeclaration = (TypeDeclaration)astRoot.types().get(0);
+//		   SimpleName newName = astRoot.getAST().newSimpleName("Y");
+//		   typeDeclaration.setName(newName);
+//
+//		   // computation of the text edits
+//		  // TextEdit edits = astRoot.rewrite(document, astRoot.getJavaProject().getOptions(true));
+//
+//		   // computation of the new source code
+//		  // edits.apply(document);
+//		   String newSource = document.get();
+		
+		 CompilationUnit sourceCu = parseStatementsCompilationUnit(source);
+		 CompilationUnit targetCu = parseStatementsCompilationUnit(source);
+		 
+		 ASTRewrite rewriter = ASTRewrite.create(targetCu.getAST());            
+		 IDocument targetDoc = new Document(new String(source.toCharArray()));
+		
+		
+	}
+	
+	static void Test9(){
+
+		String code = "public class TestFormatter{public static void main(String[] args){System.out.println(\"Hello World\");}}";
+		CodeFormatter codeFormatter = ToolFactory.createCodeFormatter(null);
+ 
+		TextEdit textEdit = codeFormatter.format(CodeFormatter.K_COMPILATION_UNIT, code, 0, code.length(), 0, null);
+		IDocument doc = new Document(code);
+		try {
+			textEdit.apply(doc);
+			System.out.println(doc.get());
+		} catch (MalformedTreeException e) {
+			e.printStackTrace();
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	static void Test10(){
+		String doc=null;
+		try {
+			doc = readFile("Snippet.txt");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		System.out.println(addReturnStatements(doc));
+	}
+	
+	public static String addReturnStatements(String doc){
+
+		Document document = new Document(doc);
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		parser.setSource(document.get().toCharArray());
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+		AST ast = cu.getAST();
+		ASTRewrite rewriter = ASTRewrite.create(ast);
+
+		TypeDeclaration typeDecl = (TypeDeclaration) cu.types().get(0);
+		MethodDeclaration methodDecl;
+
+
+		System.out.println("# of methods: "+typeDecl.getMethods().length );
+		for(int i=0;i<(typeDecl.getMethods().length);i++){
+			methodDecl = typeDecl.getMethods()[i];
+			System.out.print("Method Name: "+methodDecl.getName().toString());
+			if(checkReturnStatement(doc,methodDecl.getName().toString()) == true)
+				System.out.println(" :: It's fine");
+			else{
+				System.out.println(" :: Return statement missing!");
+				Block block = methodDecl.getBody();
+
+				System.out.println("Method Return Type :: " + methodDecl.getReturnType2().toString());
+				String returnTypeVariable = "return" + methodDecl.getReturnType2().toString();
+
+
+
+				VariableDeclarationFragment fragment = ast.newVariableDeclarationFragment();
+				fragment.setName(ast.newSimpleName(returnTypeVariable));
+				// fragment.setType(ast.newSimpleType(ast.newSimpleName(methodDecl.getReturnType2().toString())));
+				fragment.setInitializer(ast.newNullLiteral());
+				VariableDeclarationStatement result = ast.newVariableDeclarationStatement(fragment);
+				result.setType(ast.newSimpleType(ast.newSimpleName(methodDecl.getReturnType2().toString())));
+
+
+
+				ListRewrite listRewriteSVD = rewriter.getListRewrite(block, Block.STATEMENTS_PROPERTY);
+				listRewriteSVD.insertFirst(result, null);
+
+				TextEdit edits = rewriter.rewriteAST(document, null);
+
+				ReturnStatement newReturnStatement = ast.newReturnStatement();
+				newReturnStatement.setExpression(ast.newSimpleName(returnTypeVariable));
+
+				ListRewrite listRewrite = rewriter.getListRewrite(block, Block.STATEMENTS_PROPERTY);
+				listRewrite.insertLast(newReturnStatement, null);
+				
+				edits = rewriter.rewriteAST(document, null);
+
+				 try {
+						UndoEdit undo = edits.apply(document);
+					} catch (MalformedTreeException | BadLocationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				 
+			}
+		}
+
+
+	//	System.out.println(document.get().toCharArray());
+		return document.get().toString();
+	}
 	public static void main(String args[]) throws InterruptedException, IOException{
 
 		//checkVariableDeclaration();
@@ -1479,8 +1737,13 @@ public class Test2 {
 		//getVariablesAndImport();
 		//		getVariablesInScope();
 		//getVariablesAndImport("tesx");
-		Test5();
-		//Test1();
+//		try {
+//			Test8();
+//		} catch (MalformedTreeException | BadLocationException | CoreException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		Test10();
 //		convertClasstoPackage2("java.sql.Connection");
 	}
 }
