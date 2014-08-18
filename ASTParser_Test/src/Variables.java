@@ -7,7 +7,7 @@ public class Variables {
 	public Variables(String name, String type, String returnType,String packageImport) {
 		this.name = name;
 		this.type = type;
-		this.variableType = null;
+		this.variableType = new ArrayList<String>();
 		this.returnType = returnType;
 		this.packageImport = packageImport;
 		this.lineNumber=-1;

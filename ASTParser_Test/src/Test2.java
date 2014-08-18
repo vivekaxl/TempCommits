@@ -1147,10 +1147,14 @@ public class Test2 {
 
 	static List<Variables> mergeExpressionCollector(List<ExpressionCollector>ec, List<Variables>undeclaredVariables, String source){
 		//System.out.println("mergeExpressionCollector :: >>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-		//ec.stream().forEach(p->p.printData());
+		ec.stream().forEach(p->p.printData());
+		System.out.println("=============================>>>>>>>>>>>>>>>>>>>=======================");
 		for(Variables element: undeclaredVariables){
 			for(ExpressionCollector e:ec){
-				//System.out.println("mergeExpressionCollector:" + element.name + " , " + e.getVariableName());
+				System.out.println("mergeExpressionCollector:" + element.name + " , " + e.getVariableName());
+				System.out.println("mergeExpressionCollector12:" + e.getReturnType());
+				if(element.name.equals("string1") && e.getVariableName().equals("string1"))
+					System.out.println("It's here");
 				if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==false) && (e.getReturnType().equals("unresolved") ==false)){
 					element.variableType.add(e.getReturnType());
 					element.packageImport = convertClasstoPackage2(((element.variableType).get(0)).replace(" ",""));	
@@ -1457,7 +1461,7 @@ public class Test2 {
 	public static void Test5() throws IOException{
 		String source = readFile("Snippet.txt");
 		DataCollector data = null;
-
+		source = addReturnStatements(source);
 		List<Variables> undeclaredVariables = checkVariableDeclaration(source);
 
 		try {
@@ -1466,13 +1470,19 @@ public class Test2 {
 			e.printStackTrace();
 		}
 		System.out.println("Done!");
+		List<ExpressionCollector>returnValue4 = findReturnStatements(source); //Return Values
 		List<ExpressionCollector>returnValue3 = findExpressionStatement(data,source);
 		List<ExpressionCollector>returnValue2 = findTypeParameter(data,source); //MethodInvocation as expression
 		List<ExpressionCollector>returnValue =  findLeftNodeType(data,source); //Assignment
+		
+		//TODO: Need to check if addALL actually works for us!
+		
+		returnValue.addAll(returnValue4);
 		returnValue.addAll(returnValue2);
 		returnValue.addAll(returnValue3);
 		System.out.println("===================================================================================");
 		returnValue.stream().forEach(p->p.printData());
+		System.out.println("===================================================================================");
 		/*
 		for(Variables element:undeclaredVariables){
 			System.out.println("------------------------------------");
@@ -1512,23 +1522,26 @@ public class Test2 {
 						String methodName = getVariablesInScope(source, element.name);
 						declaredVariables = getVariablesAndImport(source,methodName );
 						declaredVariables = fillLineNumber(declaredVariables, source);
-						
-						for(Variables e:declaredVariables)
-							if((e.variableType.get(0).replace(" ", "")).equals((element.variableType.get(0)).replace(" ", "")) == true){
-								System.out.println("Possible Options : (Which variables can be substituted)");
-								System.out.println("------------------------------------");
-								System.out.println(e.name);
-			//					System.out.println(element.type);
-								System.out.println(e.variableType);
-			//					System.out.println(element.packageImport);
-			//					System.out.println(element.returnType);	
-			//					System.out.println(element.lineNumber);
-								System.out.println(e.lineNumber);
-			//					System.out.println("------------------------------------");
-								count++;
-							}
-						if(count==0)
-							System.out.println("Variable " + element.name +" needs declaration of type " + element.variableType );
+						if(element.variableType.size()==1){
+							for(Variables e:declaredVariables)
+								if((e.variableType.get(0).replace(" ", "")).equals((element.variableType.get(0)).replace(" ", "")) == true){
+									System.out.println("Possible Options : (Which variables can be substituted)");
+									System.out.println("------------------------------------");
+									System.out.println(e.name);
+				//					System.out.println(element.type);
+									System.out.println(e.variableType);
+				//					System.out.println(element.packageImport);
+				//					System.out.println(element.returnType);	
+				//					System.out.println(element.lineNumber);
+									System.out.println(e.lineNumber);
+				//					System.out.println("------------------------------------");
+									count++;
+								}
+							if(count==0)
+								System.out.println("Variable " + element.name +" needs declaration of type " + element.variableType );
+						}
+						else
+							System.out.println("Variable " + element.name +" could not be resolved" );
 					}
 					else if(element.type == "type" && element.packageImport != ""){
 						System.out.println("#####################################");
@@ -1536,6 +1549,41 @@ public class Test2 {
 					}
 				}
 	}
+	private static List<ExpressionCollector> findReturnStatements(String tempString) {
+		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
+		List <ExpressionCollector> returnValue = new ArrayList<ExpressionCollector>();
+		if(root == null)
+			System.out.println("Something is wrong!");
+		//find all method declaration
+			//find all return Statements
+				//if resolvebinding is null
+					//get the type from the method signature
+		
+		root.accept(new ASTVisitor() {
+			public boolean visit(MethodDeclaration node) {
+				node.accept(new ASTVisitor(){
+					public boolean visit(ReturnStatement node1){
+						System.out.println(node1.getExpression().toString());
+						if(node1.getExpression().resolveTypeBinding() == null){
+							System.out.println("Variable " + node1.getExpression().toString() +  " is not declared");
+							ASTNode temp = node1;
+							while(temp.getNodeType() != ASTNode.METHOD_DECLARATION){
+								temp=temp.getParent();
+							}
+							System.out.println(((MethodDeclaration)temp).getReturnType2().resolveBinding().getQualifiedName());
+							returnValue.add(new ExpressionCollector(node1.toString(),node1.getExpression().toString(),((MethodDeclaration)temp).getReturnType2().resolveBinding().getQualifiedName(),""));
+						}
+						return false;
+					}
+				});
+				return false;
+			}
+		});
+		
+		return returnValue;
+	}
+	
+	
 	public static void Test6(){
 		DataCollector data =  null;
 				String source = "if(cn == null){\n"
@@ -1684,7 +1732,7 @@ public class Test2 {
 				String returnTypeVariable = "return" + methodDecl.getReturnType2().toString();
 
 
-
+				/*
 				VariableDeclarationFragment fragment = ast.newVariableDeclarationFragment();
 				fragment.setName(ast.newSimpleName(returnTypeVariable));
 				// fragment.setType(ast.newSimpleType(ast.newSimpleName(methodDecl.getReturnType2().toString())));
@@ -1698,14 +1746,14 @@ public class Test2 {
 				listRewriteSVD.insertFirst(result, null);
 
 				TextEdit edits = rewriter.rewriteAST(document, null);
-
+				*/
 				ReturnStatement newReturnStatement = ast.newReturnStatement();
 				newReturnStatement.setExpression(ast.newSimpleName(returnTypeVariable));
 
 				ListRewrite listRewrite = rewriter.getListRewrite(block, Block.STATEMENTS_PROPERTY);
 				listRewrite.insertLast(newReturnStatement, null);
 				
-				edits = rewriter.rewriteAST(document, null);
+				TextEdit edits = rewriter.rewriteAST(document, null);
 
 				 try {
 						UndoEdit undo = edits.apply(document);
@@ -1721,6 +1769,18 @@ public class Test2 {
 	//	System.out.println(document.get().toCharArray());
 		return document.get().toString();
 	}
+	
+	public static void Test11(){
+		String source=null;
+		try {
+			source = readFile("Snippet.txt");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		findReturnStatements(source);
+	}
+	
 	public static void main(String args[]) throws InterruptedException, IOException{
 
 		//checkVariableDeclaration();
@@ -1733,7 +1793,7 @@ public class Test2 {
 		//printList(getMethodTest("java.sql.DriverManager","getConnection"));
 		//processQualifiedNames("java.lang.Class.forName(java.lang.String,java.lang.String)");
 		//findLeftNodeType();
-		//Test4();
+		//Test5();
 		//getVariablesAndImport();
 		//		getVariablesInScope();
 		//getVariablesAndImport("tesx");
@@ -1743,7 +1803,7 @@ public class Test2 {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-		Test10();
+		Test5();
 //		convertClasstoPackage2("java.sql.Connection");
 	}
 }

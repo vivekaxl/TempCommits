@@ -8,9 +8,10 @@ public static String buildRequest(String uri, String api_key, String format,
     b.append(string1);
     b.append(string2);
     string1 = b.toString();
+	return returnString;
 
-
-    return stringBuilder.toString();
+	//return vivek;
+    
 }
 }
 
