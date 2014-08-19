@@ -1,15 +1,20 @@
-package com.machinemode.imspire.domain;
-public class Request { private Request() { }
+package au.com.ozblog.reports;
 
-public static String buildRequest(String uri, String api_key, String format,
-        RequestParams params)
-{
-    StringBuilder stringBuilder = new StringBuilder();
-    b.append(string1);
-    b.append(string2);
-    string1 = b.toString();
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
 
-	//return vivek;
-    
+public abstract class AbstractReport implements Report{
+	
+	public JasperPrint getPrinter(String report) throws JRException {
+	 String jrxmlFile = "C:\\Users\\Heart\\Desktop\\report1.jrxml";
+	Connection con = DriverManager.getConnection("jdbc:mysql:///database","root","");
+	 JasperReport jasperReport = JasperCompileManager.compileReport(jrxmlFile);
+	JasperPrint print = (JasperPrint) JasperFillManager.fillReportToFile(jrxmlFile, new         HashMap<String, Object> (), con);
+	JasperViewer.viewReport(jprint);
+	int value=13;
+
 }
 }

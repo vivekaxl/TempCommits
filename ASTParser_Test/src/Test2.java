@@ -1780,6 +1780,76 @@ public class Test2 {
 		}
 		findReturnStatements(source);
 	}
+	static void Test12(){
+		String tempString=null;
+		try {
+			tempString = readFile("Snippet.txt");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		List<ExpressionCollector> returnValue = extractHints(tempString);
+		returnValue.stream().forEach(a->a.printData());
+	} 
+	
+	//To find constant expression
+	static List<ExpressionCollector> extractHints(String tempString){
+
+		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
+		List <ExpressionCollector> hintValue = new ArrayList<ExpressionCollector>();
+		if(root == null)
+			System.out.println("Something is wrong!");
+
+		root.accept(new ASTVisitor() {
+			public boolean visit( VariableDeclarationStatement node) {
+				node.accept(new ASTVisitor(){
+					public boolean visit(VariableDeclarationFragment node1){
+						//System.out.println("################# VariableDeclarationFragment :: " + node1.getInitializer().resolveConstantExpressionValue());
+						if(node1.getInitializer().resolveConstantExpressionValue() != null){
+							hintValue.add(new ExpressionCollector(node1.toString(),node1.getInitializer().resolveConstantExpressionValue().toString()));
+						//	System.out.println("RIGHT!");
+						}
+						node1.accept(new ASTVisitor(){
+							public boolean visit(MethodInvocation node2){
+								//System.out.println(node2.toString());
+								List<Expression> temp = node2.arguments();
+								for(int i=0;i<temp.size();i++){
+									//System.out.println("MethodInvocation inside VariableDeclarationStatement:: ################" +temp.get(i).resolveConstantExpressionValue());
+									if(temp.get(i).resolveConstantExpressionValue() != null){
+										hintValue.add(new ExpressionCollector(node1.toString(),temp.get(i).resolveConstantExpressionValue().toString()));
+									//	System.out.println("RIGHT!");
+									}
+								}
+								//System.out.println("MethodInvocation inside VariableDeclarationStatement:: " + node2.arguments()); 
+							    return false;
+								
+							}
+						});						
+						return false;
+					}
+
+				});
+				return false;
+			}
+			
+			public boolean visit(MethodInvocation node){
+				//System.out.println(node.toString());
+				List<Expression> temp = node.arguments();
+				for(int i=0;i<temp.size();i++){
+					//System.out.println(" MethodInvocation:: ################ " +temp.get(i).resolveConstantExpressionValue());
+					if(temp.get(i).resolveConstantExpressionValue() != null){
+						//System.out.println("RIGHT!");
+						hintValue.add(new ExpressionCollector(node.toString(),temp.get(i).resolveConstantExpressionValue().toString()));
+					}
+				}
+				//System.out.print("MethodInvocation:: " + node.arguments()); 
+			    return false;
+				
+			}
+		});
+		
+		return hintValue;
+	}
 	
 	public static void main(String args[]) throws InterruptedException, IOException{
 
@@ -1803,7 +1873,7 @@ public class Test2 {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-		Test5();
+		Test12();
 //		convertClasstoPackage2("java.sql.Connection");
 	}
 }

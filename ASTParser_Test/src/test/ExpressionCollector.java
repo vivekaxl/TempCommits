@@ -21,6 +21,9 @@ public class ExpressionCollector {
 	public void setReturnType(String returnType) {
 		this.returnType = returnType;
 	}
+	
+	private String constantExpression;
+	
 	public ExpressionCollector(String expression,String variableName, String returnType,String arguments) {
 		super();
 		this.expression = expression;
@@ -29,6 +32,7 @@ public class ExpressionCollector {
 		this.arguments = arguments;
 		this.returnTypeList = null;
 		this.argumentList = null;
+		this.constantExpression = null;
 	}
 	
 	public ExpressionCollector(String expression,String variableName, String returnType,String arguments, List<String> returnTypeList, List<String> argumentList) {
@@ -39,7 +43,15 @@ public class ExpressionCollector {
 		this.arguments = arguments;
 		this.returnTypeList = returnTypeList;
 		this.argumentList = argumentList;
+		this.constantExpression = null;
 	}
+	
+	public ExpressionCollector(String expression, String constantExpression){
+		this.expression = expression;
+		this.constantExpression = constantExpression;
+	}
+	
+	
 	String expression;
 	String variableName;
 	public String getVariableName() {
@@ -67,9 +79,12 @@ public class ExpressionCollector {
 	
 	public void printData(){
 		System.out.println("Expression: " + this.expression);
-		System.out.println("Variable Name: " + this.variableName);
-		System.out.println("Return Type: " + this.returnType);
-		System.out.println("Arguments: " + this.arguments);
+		if(this.variableName != null)
+			System.out.println("Variable Name: " + this.variableName);
+		if(this.returnType != null)
+			System.out.println("Return Type: " + this.returnType);
+		if(this.arguments != null)
+			System.out.println("Arguments: " + this.arguments);
 		if(this.returnTypeList!= null && this.returnTypeList.size() != 1){
 			System.out.println("Return Type List: ");
 			printList(this.returnTypeList);
@@ -78,6 +93,13 @@ public class ExpressionCollector {
 			System.out.println("Argument Type List: ");
 			printList(this.argumentList);
 		}
+		if(this.constantExpression != null)
+			if(this.constantExpression.equals("") )
+				System.out.println("Constant Expression: 'emptyString'");
+			else if(this.constantExpression.equals(" "))
+				System.out.println("Constant Expression: 'space'");
+			else
+				System.out.println("Constant Expression: " + this.constantExpression);
 		System.out.println();
 	}
 	
