@@ -1470,6 +1470,7 @@ public class Test2 {
 			e.printStackTrace();
 		}
 		System.out.println("Done!");
+		List<String> importStatements = getImportStatement(source);
 		List<ExpressionCollector>hints = extractHints(source);
 		List<ExpressionCollector>returnValue4 = findReturnStatements(source); //Return Values
 		List<ExpressionCollector>returnValue3 = findExpressionStatement(data,source);
@@ -1546,8 +1547,14 @@ public class Test2 {
 					}
 					else if(element.type == "type" && element.packageImport != ""){
 						System.out.println("#####################################");
-						System.out.println("Add Imports : " +element.packageImport + " "+element.name);
+						if(importStatements.contains(element.packageImport) == false)
+							System.out.println("Add Imports : " +element.packageImport + " "+element.name);
 					}
+				}
+				System.out.println("#####################################");
+				System.out.println("Consider the following hints");
+				for(ExpressionCollector element:hints){
+					System.out.println(element.getConstantExpression() + " might need to be changed in the expression " + element.getExpression());
 				}
 	}
 	private static List<ExpressionCollector> findReturnStatements(String tempString) {
@@ -1883,6 +1890,32 @@ public class Test2 {
 				//			System.out.println("------------------------------------");
 			}
 		}
+	}
+	public static void Test15(){
+		String source=null;
+		try {
+			source = readFile("Snippet.txt");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		source = addReturnStatements(source);
+		List<String> importStatements = getImportStatement(source);
+		printList(importStatements);
+	}
+	public static List<String> getImportStatement(String source){
+		List<String> ImportStatements = new ArrayList<String>();
+		final CompilationUnit root = parseStatementsCompilationUnit(source);
+		if(root == null)
+			System.out.println("Something is wrong!");
+
+		root.accept(new ASTVisitor() {		
+			public boolean visit(ImportDeclaration node){
+				ImportStatements.add(node.getName().getFullyQualifiedName());
+				return true;
+			}
+		});
+		return ImportStatements;
 	}
 	
 	public static void main(String args[]) throws InterruptedException, IOException{

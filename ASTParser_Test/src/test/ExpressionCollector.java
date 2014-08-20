@@ -24,6 +24,12 @@ public class ExpressionCollector {
 	
 	private String constantExpression;
 	
+	public String getConstantExpression() {
+		return constantExpression;
+	}
+	public void setConstantExpression(String constantExpression) {
+		this.constantExpression = constantExpression;
+	}
 	public ExpressionCollector(String expression,String variableName, String returnType,String arguments) {
 		super();
 		this.expression = expression;
