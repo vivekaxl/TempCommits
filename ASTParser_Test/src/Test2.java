@@ -46,6 +46,7 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
@@ -555,6 +556,12 @@ public class Test2 {
 		if (problems != null && problems.length > 0) {
 			for (IProblem problem : problems) {
 				System.out.println(problem.getMessage());
+				System.out.println(problem.getID());
+				
+				System.out.println(IProblem.UnresolvedVariable);
+				System.out.println(IProblem.UndefinedType);
+				System.out.println(IProblem.UndefinedName);
+				
 				if(problem.getID() == IProblem.UnresolvedVariable){
 					if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
 						returnUndeclared.add(new Variables(problem.getArguments()[0],"variable","","NA"));
@@ -564,6 +571,7 @@ public class Test2 {
 						returnUndeclared.add(new Variables(problem.getArguments()[0],"type","NA",convertClasstoPackage(problem.getArguments()[0])));
 				}
 				else if(problem.getID() == IProblem.UndefinedName){
+					System.out.println(problem.getArguments()[0]);
 //					if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
 //						returnUndeclared.add(new Variables(problem.getArguments()[0],"variable","","NA"));
 				}
@@ -1819,14 +1827,14 @@ public class Test2 {
 			public boolean visit( VariableDeclarationStatement node) {
 				node.accept(new ASTVisitor(){
 					public boolean visit(VariableDeclarationFragment node1){
-						//System.out.println("################# VariableDeclarationFragment :: " + node1.getInitializer().resolveConstantExpressionValue());
+//						System.out.println("################# VariableDeclarationFragment :: " + node1.getInitializer().toString());//.resolveConstantExpressionValue());
 						if(node1.getInitializer().resolveConstantExpressionValue() != null){
 							hintValue.add(new ExpressionCollector(node1.toString(),node1.getInitializer().resolveConstantExpressionValue().toString()));
-						//	System.out.println("RIGHT!");
+							System.out.println("RIGHT!");
 						}
 						node1.accept(new ASTVisitor(){
 							public boolean visit(MethodInvocation node2){
-								//System.out.println(node2.toString());
+//								System.out.println("MI>>>>>>>>>>>>>" +node2.toString());
 								List<Expression> temp = node2.arguments();
 								for(int i=0;i<temp.size();i++){
 									//System.out.println("MethodInvocation inside VariableDeclarationStatement:: ################" +temp.get(i).resolveConstantExpressionValue());
@@ -1836,8 +1844,24 @@ public class Test2 {
 									}
 								}
 								//System.out.println("MethodInvocation inside VariableDeclarationStatement:: " + node2.arguments()); 
-							    return false;
+							    return true;
 								
+							}
+							public boolean visit(ClassInstanceCreation node2){
+//								System.out.println("ClassInstanceCreate :: " +node2.toString());
+//								System.out.println("ClassInstanceCreate :: " +node2.arguments());
+								for(int i=0;i<node2.arguments().size();i++){
+									if(((Expression)node2.arguments().get(i)).resolveConstantExpressionValue()!= null){
+										hintValue.add(new ExpressionCollector(node1.toString(),((Expression)node2.arguments().get(i)).resolveConstantExpressionValue().toString()));
+									//	System.out.println(((Expression)node2.arguments().get(i)).resolveConstantExpressionValue().toString());
+									}
+								}
+								return true;
+							}
+							public boolean visit(TypeLiteral node2){
+//								System.out.println("TypeLiteral : "+node2.toString());
+								hintValue.add(new ExpressionCollector(node1.toString(),node2.toString()));
+								return true;
 							}
 						});						
 						return false;
@@ -1848,7 +1872,7 @@ public class Test2 {
 			}
 			
 			public boolean visit(MethodInvocation node){
-				//System.out.println(node.toString());
+				//System.out.println("OUTTAMI >>>>>>>>>>>>>>>>>>" + node.toString());
 				List<Expression> temp = node.arguments();
 				for(int i=0;i<temp.size();i++){
 					//System.out.println(" MethodInvocation:: ################ " +temp.get(i).resolveConstantExpressionValue());
@@ -1903,6 +1927,16 @@ public class Test2 {
 		List<String> importStatements = getImportStatement(source);
 		printList(importStatements);
 	}
+	public static void Test16(){
+		String source=null;
+		try {
+			source = readFile("Snippet.txt");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		checkVariableDeclaration(source);
+	}
 	public static List<String> getImportStatement(String source){
 		List<String> ImportStatements = new ArrayList<String>();
 		final CompilationUnit root = parseStatementsCompilationUnit(source);
@@ -1940,6 +1974,7 @@ public class Test2 {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
+//		Test16();
 		Test5();
 //		convertClasstoPackage2("java.sql.Connection");
 	}

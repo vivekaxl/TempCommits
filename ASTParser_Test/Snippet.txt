@@ -1,20 +1,32 @@
-package au.com.ozblog.reports;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
+// Reads xml file and returns different tags in separate methods. 
+// For more tags, use an array.
+package scan;
 
-public abstract class AbstractReport implements Report{
-	
-	public JasperPrint getPrinter(String report) throws JRException {
-	 String jrxmlFile = "C:\\Users\\Heart\\Desktop\\report1.jrxml";
-	Connection con = DriverManager.getConnection("jdbc:mysql:///database","root","");
-	 JasperReport jasperReport = JasperCompileManager.compileReport(jrxmlFile);
-	JasperPrint print = (JasperPrint) JasperFillManager.fillReportToFile(jrxmlFile, new         HashMap<String, Object> (), con);
-	JasperViewer.viewReport(jprint);
-	int value=13;
+import java.io.File;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
-}
-}
+/*
+ * @author Marcel Patek
+ * @version 1
+ * @since July 2013
+ * 
+ */
+public class JAXBReader {
+    String Reader1() {
+        try {
+            //Settings settings = JAXB.unmarshall(new File("file.xml"), Settings.class);
+            File file = new File("nboscan_settings.xml");
+
+		JAXBContext jaxbContext = JAXBContext.newInstance(Customer.class);
+		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+		Customer customer = (Customer) jaxbUnmarshaller.unmarshal(new File("C:\\file.xml"));
+
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+        return null;
+        }
+        }

@@ -87,7 +87,11 @@ public class DataCollector {
 			tempElement = m.group(1);
 		//can't use ',' as a separator so I first replace ), with )|| and then split it with ||
 		tempElement = tempElement.replace(" ","").replace("\n", "").replace("),",")||");
-		String[] tempElements = tempElement.split("\\|\\|");
+		String[] tempElements;
+		if(returnValue.type.equals("api_type")== true)
+			tempElements = tempElement.split("\\,");
+		else
+			tempElements = tempElement.split("\\|\\|");
 		returnValue.elements = Arrays.asList(tempElements);
 		
 
