@@ -564,8 +564,8 @@ public class Test2 {
 						returnUndeclared.add(new Variables(problem.getArguments()[0],"type","NA",convertClasstoPackage(problem.getArguments()[0])));
 				}
 				else if(problem.getID() == IProblem.UndefinedName){
-					if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
-						returnUndeclared.add(new Variables(problem.getArguments()[0],"variable","","NA"));
+//					if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
+//						returnUndeclared.add(new Variables(problem.getArguments()[0],"variable","","NA"));
 				}
 				else{
 					;
@@ -1151,8 +1151,8 @@ public class Test2 {
 		System.out.println("=============================>>>>>>>>>>>>>>>>>>>=======================");
 		for(Variables element: undeclaredVariables){
 			for(ExpressionCollector e:ec){
-				System.out.println("mergeExpressionCollector:" + element.name + " , " + e.getVariableName());
-				System.out.println("mergeExpressionCollector12:" + e.getReturnType());
+//				System.out.println("mergeExpressionCollector:" + element.name + " , " + e.getVariableName());
+//				System.out.println("mergeExpressionCollector12:" + e.getReturnType());
 				if(element.name.equals("string1") && e.getVariableName().equals("string1"))
 					System.out.println("It's here");
 				if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==false) && (e.getReturnType().equals("unresolved") ==false)){
@@ -1470,6 +1470,7 @@ public class Test2 {
 			e.printStackTrace();
 		}
 		System.out.println("Done!");
+		List<ExpressionCollector>hints = extractHints(source);
 		List<ExpressionCollector>returnValue4 = findReturnStatements(source); //Return Values
 		List<ExpressionCollector>returnValue3 = findExpressionStatement(data,source);
 		List<ExpressionCollector>returnValue2 = findTypeParameter(data,source); //MethodInvocation as expression
@@ -1552,6 +1553,7 @@ public class Test2 {
 	private static List<ExpressionCollector> findReturnStatements(String tempString) {
 		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
 		List <ExpressionCollector> returnValue = new ArrayList<ExpressionCollector>();
+		System.out.println(ASTNode.BLOCK);
 		if(root == null)
 			System.out.println("Something is wrong!");
 		//find all method declaration
@@ -1568,10 +1570,15 @@ public class Test2 {
 							System.out.println("Variable " + node1.getExpression().toString() +  " is not declared");
 							ASTNode temp = node1;
 							while(temp.getNodeType() != ASTNode.METHOD_DECLARATION){
+								System.out.println(temp.getNodeType());
 								temp=temp.getParent();
 							}
-							System.out.println(((MethodDeclaration)temp).getReturnType2().resolveBinding().getQualifiedName());
-							returnValue.add(new ExpressionCollector(node1.toString(),node1.getExpression().toString(),((MethodDeclaration)temp).getReturnType2().resolveBinding().getQualifiedName(),""));
+							if(((MethodDeclaration)temp).getReturnType2().resolveBinding() != null){
+								System.out.println(((MethodDeclaration)temp).getReturnType2().resolveBinding().getQualifiedName());
+								returnValue.add(new ExpressionCollector(node1.toString(),node1.getExpression().toString(),((MethodDeclaration)temp).getReturnType2().resolveBinding().getQualifiedName(),""));
+							}
+							else
+								returnValue.add(new ExpressionCollector(node1.toString(),node1.getExpression().toString(),((MethodDeclaration)temp).getReturnType2().toString(),""));
 						}
 						return false;
 					}
@@ -1778,6 +1785,7 @@ public class Test2 {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		source= addReturnStatements(source);
 		findReturnStatements(source);
 	}
 	static void Test12(){
@@ -1851,6 +1859,32 @@ public class Test2 {
 		return hintValue;
 	}
 	
+	static void Test14(){
+		String source=null;
+		try {
+			source = readFile("Snippet.txt");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		source = addReturnStatements(source);
+		List<Variables> undeclaredVariables = checkVariableDeclaration(source);
+		
+		for(Variables element:undeclaredVariables){
+			if(element.type.equals("type") != true){
+				System.out.println("------------------------------------");
+				System.out.println(element.name);
+				//			System.out.println(element.type);
+				System.out.println(element.variableType);
+				//			System.out.println(element.packageImport);
+				//			System.out.println(element.returnType);	
+				//			System.out.println(element.lineNumber);
+				System.out.println(element.lineNumber);
+				//			System.out.println("------------------------------------");
+			}
+		}
+	}
+	
 	public static void main(String args[]) throws InterruptedException, IOException{
 
 		//checkVariableDeclaration();
@@ -1873,7 +1907,7 @@ public class Test2 {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-		Test12();
+		Test5();
 //		convertClasstoPackage2("java.sql.Connection");
 	}
 }
