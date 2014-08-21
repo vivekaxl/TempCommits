@@ -327,7 +327,7 @@ public class Test2 {
 			return(pack);
 		}
 		System.out.println("convertClasstoPackage:: Package not found!!");
-		return("convertClasstoPackage:: Package not found!!");
+		return("convertClasstoPackage:: Package not found!!!!");
 	}
 
 	/*
@@ -572,8 +572,8 @@ public class Test2 {
 				}
 				else if(problem.getID() == IProblem.UndefinedName){
 					System.out.println(problem.getArguments()[0]);
-					//					if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
-					//						returnUndeclared.add(new Variables(problem.getArguments()[0],"variable","","NA"));
+										if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
+											returnUndeclared.add(new Variables(problem.getArguments()[0],"type","","NA"));
 				}
 				else{
 					;
@@ -1310,8 +1310,11 @@ public class Test2 {
 				if(temp.type.equals("api_type"))
 				{
 					for(String tempElement:temp.elements){
-						if(tempElement.contains(element.name) == true && temp.elements.size() == 1){
-							element.packageImport = tempElement;
+						if(tempElement.contains(element.name) == true ){
+							if(temp.elements.size() == 1)
+								element.packageImport = tempElement;
+							else
+								element.packageImport = "not found";
 						}						
 					}
 				}
@@ -1542,35 +1545,52 @@ public class Test2 {
 		System.out.println("===================================================================================");
 		returnValue.stream().forEach(p->p.printData());
 		System.out.println("===================================================================================");
-		/*
-		for(Variables element:undeclaredVariables){
-			System.out.println("------------------------------------");
-			System.out.println(element.name);
-			//			System.out.println(element.type);
-			System.out.println(element.variableType);
-			//			System.out.println(element.packageImport);
-			//			System.out.println(element.returnType);	
-			//			System.out.println(element.lineNumber);
-			System.out.println(element.lineNumber);
-			//			System.out.println("------------------------------------");
-		}*/
+		
+//		for(Variables element:undeclaredVariables){
+//			System.out.println("----------------before fillUndeclaredVariablesFromBaker--------------------");
+//			System.out.println(element.name);
+//			//			System.out.println(element.type);
+//			System.out.println(element.variableType);
+//			//			System.out.println(element.packageImport);
+//			//			System.out.println(element.returnType);	
+//			//			System.out.println(element.lineNumber);
+//			System.out.println(element.lineNumber);
+//			//			System.out.println("------------------------------------");
+//		}
 		undeclaredVariables = fillUndeclaredVariablesFromBaker(data,undeclaredVariables);
 		undeclaredVariables = mergeExpressionCollector(returnValue,undeclaredVariables,source);
+		
+//		for(Variables element:undeclaredVariables){
+//			System.out.println("-----------------###AfterMergeExpressionCollector###----------------");
+//			System.out.println(element.name);
+//			System.out.println(element.type);
+//			System.out.println(element.variableType);
+//			System.out.println(element.packageImport);
+//			//			System.out.println(element.returnType);	
+//			//			System.out.println(element.lineNumber);
+//			System.out.println(element.lineNumber);
+//			//			System.out.println("------------------------------------");
+//		}
+		
 		undeclaredVariables = getInformationFromParameter(returnValue,undeclaredVariables,source);
 		undeclaredVariables = fillLineNumber(undeclaredVariables, source);
 
 
-		//		for(Variables element:undeclaredVariables){
-		//			System.out.println("-----------------###----------------");
-		//			System.out.println(element.name);
-		//			System.out.println(element.type);
-		//			System.out.println(element.variableType);
-		//			System.out.println(element.packageImport);
-		//			//			System.out.println(element.returnType);	
-		//			//			System.out.println(element.lineNumber);
-		//			System.out.println(element.lineNumber);
-		//			//			System.out.println("------------------------------------");
-		//		}
+//				for(Variables element:undeclaredVariables){
+//					System.out.println("-----------------###----------------");
+//					System.out.println(element.name);
+//					System.out.println(element.type);
+//					System.out.println(element.variableType);
+//					System.out.println(element.packageImport);
+//					//			System.out.println(element.returnType);	
+//					//			System.out.println(element.lineNumber);
+//					System.out.println(element.lineNumber);
+//					//			System.out.println("------------------------------------");
+//				}
+		//Clear Console
+		for(int i=0;i<10;i++)
+			System.out.println();
+		
 		for(Variables element:undeclaredVariables){
 
 			if(element.type == "variable"){
@@ -1602,11 +1622,13 @@ public class Test2 {
 				else
 					System.out.println("Variable " + element.name +" could not be resolved" );
 			}
-			else if(element.type == "type" && element.packageImport != ""){
+			else if(element.type == "type" && element.packageImport != "" && element.packageImport != "NA" ){
 				System.out.println("#####################################");
 				if(importStatements.contains(element.packageImport) == false)
 					System.out.println("Add Imports : " +element.packageImport + " "+element.name);
 			}
+			else if(element.type == "type")
+				System.out.println("Type " + element.name + " could not be resolved");
 		}
 		System.out.println("#####################################");
 		System.out.println("Consider the following hints");

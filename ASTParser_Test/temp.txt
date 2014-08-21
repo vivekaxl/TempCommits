@@ -1,40 +1,21 @@
-/*package collections;
+package com.machinemode.imspire.domain;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
- 
-public class ListFrequency {
- 
-    public static void main(String a[]){
-        int count;
-        List<String> ll = new ArrayList<String>();
-        ll.add("one");
-        ll.add("two");
-        ll.add("three");
-        ll.add("four");
-        ll.add("two");
-        ll.add("three");
-        ll.add("two");
-        ll.add("one");
-        System.out.println("Actual list: "+ll);
-
-	count = Collections.frequency(list, "B"); 
-
+public class Request
+{
+    private Request()
+    {
     }
 
-}*/
+    public static String buildRequest(String uri, String api_key, String format,
+            RequestParams params)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+		b.append(string1);
+		b.append(string2);
+		string1 = b.toString();
 
-class abc{
 
-public void test(){
-
-Properties props = new Properties();
-props.load(fs);
-String url = props.getProperty("db.url");
-String userName = props.getProperty("db.user");
-String password = props.getProperty("db.password");
-Class.forName(driverClass); 
-con=DriverManager.getConnection(url, userName, password);
-} public void test2(){ int a,b,c,d; } }
+        return stringBuilder.toString();
+    }
+}
 
