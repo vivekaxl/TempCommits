@@ -747,6 +747,7 @@ public class Test2 {
 		List <ExpressionCollector> returnValue = new ArrayList<ExpressionCollector>();
 		List <MethodInvocation> expressionStatements = new ArrayList<MethodInvocation>();
 		List<String> returnBakerType = new ArrayList<String>();
+		List<String> returnArgumentBakerType = new ArrayList<String>();
 		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
 		//Find all the ExpressionStatement node and then look for method invocation which doesn't have an assignment sign
 		root.accept(new ASTVisitor() {
@@ -763,8 +764,10 @@ public class Test2 {
 						System.out.println(node.getExpression().toString());
 						if(node.getExpression().resolveTypeBinding()==null){
 							int noArguments= node.arguments().size();
+							List<Expression> actualArguments = node.arguments();
 							System.out.println(node.getExpression().toString() + " is not declared");
 							String className = node.getName().toString();
+							System.out.println("ClassName :: "+ className);
 							List<String> elementBaker= elementsMatchFromBaker(data,className);
 							printList(elementBaker);
 							System.out.println("Number of matching elements from Baker : " + elementBaker.size());
@@ -779,15 +782,33 @@ public class Test2 {
 									elementBaker.remove(e);
 								}
 								else{
-									tempElements=e.split("."+className)[0];
+									tempElements=e.split("\\."+className)[0];
 									if(returnBakerType.contains(tempElements)==false){
 										returnBakerType.add(tempElements);
 										System.out.println(tempElements);
 									}
+									String tempElementsA = null;
+									Pattern pattern = Pattern.compile("\\(([^\"]*)\\)");
+									Matcher m = pattern.matcher(e);
+									if (m.find()){ 
+										tempElementsA = m.group(1);
+									}
+									if(returnArgumentBakerType.contains(tempElementsA)==false){
+										returnArgumentBakerType.add(tempElementsA);
+										System.out.println("RBT " + tempElementsA);
+									}
 								}
 							}
-							System.out.println("returnBakerArguements.size() : " + returnBakerType.size());
+							System.out.println("returnBakerType.size() : " + returnBakerType.size());
+							System.out.println("returnArgumentBakerType.size() : " + returnArgumentBakerType.size());
 							returnValue.add(new ExpressionCollector(node.toString(),node.getExpression().toString(),"confused","",returnBakerType,null));
+							if(returnArgumentBakerType.size() ==1){
+								List<String> tempArg = Arrays.asList(returnArgumentBakerType.get(0).split("\\,"));
+								for(int i=0;i<tempArg.size();i++){
+									System.out.println("returnArgumentBakerType :: >>>>>>>>>>>>." + actualArguments.get(i).toString());
+									returnValue.add(new ExpressionCollector(node.toString(),actualArguments.get(i).toString(),tempArg.get(i),"NA"));
+								}
+							}
 
 
 						}
