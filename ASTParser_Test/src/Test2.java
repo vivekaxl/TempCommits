@@ -95,7 +95,7 @@ public class Test2 {
 		ASTNode root = parser.createAST(null);
 		return root;
 	}
-	
+
 	public static String getMethodName(int depth)
 	{
 		depth=0;
@@ -208,29 +208,29 @@ public class Test2 {
 	 * Read a file and store as a string
 	 * @ http://stackoverflow.com/questions/16027229/reading-from-a-text-file-and-storing-in-a-string
 	 */
-	
-	public static String readFile(String fileName) throws IOException {
-	    BufferedReader br = new BufferedReader(new FileReader(fileName));
-	    try {
-	        StringBuilder sb = new StringBuilder();
-	        String line = br.readLine();
 
-	        while (line != null) {
-	            sb.append(line);
-	            sb.append("\n");
-	            line = br.readLine();
-	        }
-	        return sb.toString();
-	    } finally {
-	        br.close();
-	    }
+	public static String readFile(String fileName) throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(fileName));
+		try {
+			StringBuilder sb = new StringBuilder();
+			String line = br.readLine();
+
+			while (line != null) {
+				sb.append(line);
+				sb.append("\n");
+				line = br.readLine();
+			}
+			return sb.toString();
+		} finally {
+			br.close();
+		}
 	}
-//	static String readFile(String path, Charset encoding) 
-//			throws IOException 
-//	{
-//		byte[] encoded = Files.readAllBytes(Paths.get(path));
-//		return new String(encoded, encoding);
-//	}
+	//	static String readFile(String path, Charset encoding) 
+	//			throws IOException 
+	//	{
+	//		byte[] encoded = Files.readAllBytes(Paths.get(path));
+	//		return new String(encoded, encoding);
+	//	}
 
 	public static DataCollector getTypesFromBaker(String source) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
 		String response = null;
@@ -329,25 +329,25 @@ public class Test2 {
 		System.out.println("convertClasstoPackage:: Package not found!!");
 		return("convertClasstoPackage:: Package not found!!");
 	}
-	
+
 	/*
 	 * Given a class name find the package it is associated to.
 	 */	
 	static String convertClasstoPackage2(String className) {
 
-	     try {
-	        Class cls = Class.forName(className);
-	         
-	        // returns the name and package of the class
-	       // System.out.println("Class = " + cls.getName());
-	       // System.out.println("Package = " + cls.getPackage().getName());
-	        return cls.getPackage().getName();
-	     }
-	     catch(ClassNotFoundException ex) {
-	        System.out.println(ex.toString());
-	        return null;
-	     }
-	   }
+		try {
+			Class cls = Class.forName(className);
+
+			// returns the name and package of the class
+			// System.out.println("Class = " + cls.getName());
+			// System.out.println("Package = " + cls.getPackage().getName());
+			return cls.getPackage().getName();
+		}
+		catch(ClassNotFoundException ex) {
+			System.out.println(ex.toString());
+			return null;
+		}
+	}
 
 
 	static String getVariablesInScope(String source,String VariableName){
@@ -515,17 +515,17 @@ public class Test2 {
 				return false;
 			}
 		});
-//				for(Variables element:returnDeclared){
-//					System.out.println(">>>>>>>>>>>>>>>>>>>>>>>------------------------------------");
-//					System.out.println(element.name);
-//		//			System.out.println(element.type);
-//					System.out.println(element.variableType);
-//		//			System.out.println(element.packageImport);
-//		//			System.out.println(element.returnType);	
-//		//			System.out.println(element.lineNumber);
-//					System.out.println(element.lineNumber);
-//		//			System.out.println("------------------------------------");
-//				}
+		//				for(Variables element:returnDeclared){
+		//					System.out.println(">>>>>>>>>>>>>>>>>>>>>>>------------------------------------");
+		//					System.out.println(element.name);
+		//		//			System.out.println(element.type);
+		//					System.out.println(element.variableType);
+		//		//			System.out.println(element.packageImport);
+		//		//			System.out.println(element.returnType);	
+		//		//			System.out.println(element.lineNumber);
+		//					System.out.println(element.lineNumber);
+		//		//			System.out.println("------------------------------------");
+		//				}
 		return returnDeclared;
 	}
 
@@ -557,11 +557,11 @@ public class Test2 {
 			for (IProblem problem : problems) {
 				System.out.println(problem.getMessage());
 				System.out.println(problem.getID());
-				
+
 				System.out.println(IProblem.UnresolvedVariable);
 				System.out.println(IProblem.UndefinedType);
 				System.out.println(IProblem.UndefinedName);
-				
+
 				if(problem.getID() == IProblem.UnresolvedVariable){
 					if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
 						returnUndeclared.add(new Variables(problem.getArguments()[0],"variable","","NA"));
@@ -572,8 +572,8 @@ public class Test2 {
 				}
 				else if(problem.getID() == IProblem.UndefinedName){
 					System.out.println(problem.getArguments()[0]);
-//					if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
-//						returnUndeclared.add(new Variables(problem.getArguments()[0],"variable","","NA"));
+					//					if(returnUndeclared.contains(new Variables(problem.getArguments()[0],"","",""))==false)
+					//						returnUndeclared.add(new Variables(problem.getArguments()[0],"variable","","NA"));
 				}
 				else{
 					;
@@ -788,8 +788,8 @@ public class Test2 {
 							}
 							System.out.println("returnBakerArguements.size() : " + returnBakerType.size());
 							returnValue.add(new ExpressionCollector(node.toString(),node.getExpression().toString(),"confused","",returnBakerType,null));
-							
-							
+
+
 						}
 						return false;
 					}					
@@ -797,12 +797,12 @@ public class Test2 {
 				return false;
 			}
 		});
-		
+
 		return returnValue;
-	
+
 	}
-	
-	
+
+
 	/*
 	 * Trying to resolve parameters from a ExpressionStatement + MethodInvocation
 	 */
@@ -824,23 +824,25 @@ public class Test2 {
 								return false;
 							temp=temp.getParent();
 						}
-						System.out.println("1");
+						System.out.println("1 " +node.toString());
 						int noArguments=-1;
 						expressionStatements.add(node);
-						if(node.getExpression().resolveTypeBinding() == null)
+						if(node.getExpression().resolveTypeBinding() == null){
+							System.out.println("Return");
 							return false;
+						}
 						String className = node.getExpression().toString() + "." + node.getName().toString();
-//						System.out.println("2"+node.getExpression().resolveTypeBinding());
+												System.out.println("2"+node.getExpression().resolveTypeBinding());
 						System.out.println("1" + className);
-//						if(node.resolveMethodBinding() != null)
-//							System.out.println("1" + node.resolveMethodBinding().toString());
+						//						if(node.resolveMethodBinding() != null)
+						//							System.out.println("1" + node.resolveMethodBinding().toString());
 						noArguments = node.arguments().size();
 						//Find from baker what is the api this corresponds to
 						List<String> elementBaker= elementsMatchFromBaker(data,className);
 						printList(elementBaker);
 						System.out.println("Number of arguments: " + noArguments);
 						System.out.println("Number of matching elements from Baker : " + elementBaker.size());
-						
+
 						//extra checking: checking if the arguments match (between baker elements and code)
 						String tempElements = null;
 						for(String e:elementBaker){
@@ -858,7 +860,7 @@ public class Test2 {
 									returnBakerArguements.add(tempElements);
 									System.out.println(tempElements);
 								}
-									
+
 							}
 						}
 						System.out.println("returnBakerArguements.size() : " + returnBakerArguements.size());
@@ -885,22 +887,22 @@ public class Test2 {
 							}
 						}
 						printList(returnBakerArguements);	
-						
-						
+
+
 						return false;
 					}
 				});
-				
+
 				return true;	
 			}
 		});
 		//returnValue.stream().forEach(p->System.out.println(p.getVariableName()+ " , "+p.getReturnType()));
-		
-		
-		
+
+
+
 		return returnValue;
 	}
-	
+
 	static List<ExpressionCollector> findLeftNodeType(DataCollector data, String tempString){
 
 		//		String source = "if(cn == null){\n"
@@ -917,8 +919,11 @@ public class Test2 {
 		List <Expression> expressionStatement = new ArrayList<Expression>();
 		//String tempString = enclosedClasses(source);
 		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
+		if(root == null)
+			System.out.println("Something is wrong!!");
 		root.accept(new ASTVisitor() {
 			public boolean visit(Assignment node) {
+				System.out.println("findLeftNodeType >>>>>>>>>> :: " + node.toString());
 				expressionStatement.add(node.getRightHandSide());
 				return true;	
 			}
@@ -934,9 +939,9 @@ public class Test2 {
 						className = node.getExpression().toString() + "." + node.getName().toString();
 					else
 						className = node.getName().toString();
-//					System.out.println(node.getName().toString());
-//					System.out.println("findLeftNodeType arguments :: "+node.arguments());
-//					System.out.println("findLeftNodeType arguments size :: "+node.arguments().size());
+					//					System.out.println(node.getName().toString());
+					//					System.out.println("findLeftNodeType arguments :: "+node.arguments());
+					//					System.out.println("findLeftNodeType arguments size :: "+node.arguments().size());
 					noArguments = node.arguments().size();
 					//Find from baker what is the api this corresponds to
 					List<String> elementBakerReturnType = elementsMatchFromBaker(data,className);
@@ -948,17 +953,18 @@ public class Test2 {
 						//TODO: can pass parameters as well then there would be only one returnValue rather than a list of returnValues
 						List<String> tempReturnType = getReturnType(tempQN.className, tempQN.methodName);
 						for(String element2:tempReturnType){
+							System.out.println("Inside :: " +element2);
 							if(returnBakerReturnType.contains(element2.split("\\-")[0])==false){
 								returnBakerReturnType.add(element2.split("\\-")[0]);
 							}
 							if(returnBakerArguements.contains(element2.split("\\-")[1]) ==false 
 									&& (StringUtils.countMatches(element2.split("\\-")[1],",") == (noArguments -1))){
-									returnBakerArguements.add(element2.split("\\-")[1]);
+								returnBakerArguements.add(element2.split("\\-")[1]);
 							}
 						}
 					}
 					System.out.println("4-Iamhere"+returnBakerReturnType.size());
-//					System.out.println("5-Iamhere"+returnBakerArguements.size());
+					//					System.out.println("5-Iamhere"+returnBakerArguements.size());
 					if(returnBakerReturnType.size() > 1 && returnBakerArguements.size() == 1){
 						System.out.println("findLeftNodeType:: Different API but same parameter");
 						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), "confused",returnBakerArguements.get(0), returnBakerReturnType,returnBakerArguements));
@@ -970,6 +976,15 @@ public class Test2 {
 					else if(returnBakerReturnType.size() == 1 && returnBakerArguements.size() == 1){
 						System.out.println("findLeftNodeType::Perfect");
 						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), returnBakerReturnType.get(0),returnBakerArguements.get(0)));
+						List<Expression> tempArguments = node.arguments();
+						printList(tempArguments);
+						List<String> tempReturnArguments = Arrays.asList(returnBakerArguements.get(0).replace(" ", "").split("\\,"));
+						printList(tempReturnArguments);
+						if(tempArguments.size() == tempReturnArguments.size())
+							for(int index=0;index<tempArguments.size();index++)
+								returnValue.add(new ExpressionCollector(node.toString(),tempArguments.get(index).toString(),tempReturnArguments.get(index),"NA"));
+						else
+							System.out.println("Something is wrong!");
 					}
 					else if(returnBakerReturnType.size() == 1 && returnBakerArguements.size() == 0){
 						System.out.println("findLeftNodeType::Perfect");
@@ -1028,7 +1043,7 @@ public class Test2 {
 						returnValue.add(new ExpressionCollector(node.toString(),((Assignment)node.getParent()).getLeftHandSide().toString(), tempList.get(0),"NA"));
 						for(String element:elementInfix) //No need to check if the element is a part of undeclared variable. Would be checked in mergeExpressionCollector()
 							returnValue.add(new ExpressionCollector(node.toString(),element, tempList.get(0),"NA"));
-						
+
 					}
 
 					return false;
@@ -1114,9 +1129,9 @@ public class Test2 {
 				Class[] paramVal = methVal.getParameterTypes();
 				StringBuffer params = new StringBuffer();
 				for (int j = 0; j < paramVal.length; j++) {
-				         if (j > 0)
-				           params.append(", ");
-				         params.append(paramVal[j].getName());
+					if (j > 0)
+						params.append(", ");
+					params.append(paramVal[j].getName());
 				}
 				if(returnValues.contains(returnVal.getName())!=true){
 					returnValues.add(returnVal.getName()+" - " + params);
@@ -1159,8 +1174,8 @@ public class Test2 {
 		System.out.println("=============================>>>>>>>>>>>>>>>>>>>=======================");
 		for(Variables element: undeclaredVariables){
 			for(ExpressionCollector e:ec){
-//				System.out.println("mergeExpressionCollector:" + element.name + " , " + e.getVariableName());
-//				System.out.println("mergeExpressionCollector12:" + e.getReturnType());
+				//				System.out.println("mergeExpressionCollector:" + element.name + " , " + e.getVariableName());
+				//				System.out.println("mergeExpressionCollector12:" + e.getReturnType());
 				if(element.name.equals("string1") && e.getVariableName().equals("string1"))
 					System.out.println("It's here");
 				if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==false) && (e.getReturnType().equals("unresolved") ==false)){
@@ -1177,7 +1192,7 @@ public class Test2 {
 		}
 		return undeclaredVariables;
 	}
-	
+
 	public static Integer countList(List<Integer> list, Integer element){
 		Integer count=0;
 		for(Integer e:list)
@@ -1185,77 +1200,78 @@ public class Test2 {
 				count++;
 		return count;
 	}
-	
-	
+
+
 	static List<Variables> getInformationFromParameter(List<ExpressionCollector>ec, List<Variables>undeclaredVariables, String source){
 		for(Variables element: undeclaredVariables){
 			for(ExpressionCollector e:ec){
+				//System.out.println("getInformationFromParameter >>>>>>>>>>>>> : " + e.getVariableName() + " " + element.name);
 				//The type of element which was a undeclared variable before and the return type is not confused (can be more than one type) or unresolved
 				if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==false) && (e.getReturnType().equals("unresolved") ==false)){
-    				//TODO: try to find variable types from API signature returned by Baker
+					//TODO: try to find variable types from API signature returned by Baker
 					if(e.getArgumentList()!= null && e.getArgumentList().size()>=1){ //Argument has more than or equal to one option
 						//System.out.println("getInformationFromParameter Expression :: " +e.getExpression());
 						//find all the variables in the expression
 						final CompilationUnit root = parseStatementsCompilationUnit(source);
 						root.accept(new ASTVisitor() {
 							public boolean visit(MethodInvocation node) { //it has to be a method invocation
-								//System.out.println("getInformationFromParameter : " + node.toString());
+							//	System.out.println("getInformationFromParameter : " + node.toString());
 								if(e.getExpression().contains(node.getName().toString())==true){ //find the method invocation node which contains the expression
-										System.out.println("getInformationFromParameter Found Expression :: " + node.arguments()); //argument of the method invocation
-										int count =0;
-										List<String> codeArguments = new ArrayList<String>();
-										for(SimpleName name: (List<SimpleName>)node.arguments()){
-											count++;
-											//System.out.println("getInformationFromParameter Test 1 "+ name.toString());
-											for(Variables tempElement: undeclaredVariables){ 
-												if(tempElement.name.equals(name.toString())==true){//checking if the arguments are undeclared variables
-													if(tempElement.variableType.size() == 1) //variable type of the undeclared Variable was resolved using fillUndeclaredVariablesFromBaker()
-														codeArguments.add(tempElement.variableType.get(0));
-													else
-														codeArguments.add("X"); //if it has been not resolved add 'X' to the array
-													//System.out.println("getInformationFromParameter : tempElement.name : " + tempElement.name + ", tempElement.variableType : "+ tempElement.variableType + ", argument number : " + count) ;
+									//System.out.println("getInformationFromParameter Found Expression :: " + node.arguments()); //argument of the method invocation
+									int count =0;
+									List<String> codeArguments = new ArrayList<String>();
+									for(SimpleName name: (List<SimpleName>)node.arguments()){
+										count++;
+										//System.out.println("getInformationFromParameter Test 1 "+ name.toString());
+										for(Variables tempElement: undeclaredVariables){ 
+											if(tempElement.name.equals(name.toString())==true){//checking if the arguments are undeclared variables
+												if(tempElement.variableType.size() == 1) //variable type of the undeclared Variable was resolved using fillUndeclaredVariablesFromBaker()
+													codeArguments.add(tempElement.variableType.get(0));
+												else
+													codeArguments.add("X"); //if it has been not resolved add 'X' to the array
+												//System.out.println("getInformationFromParameter : tempElement.name : " + tempElement.name + ", tempElement.variableType : "+ tempElement.variableType + ", argument number : " + count) ;
+											}
+										}
+									}
+									//System.out.println("Code Arguments >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+									//printList(codeArguments);
+									//System.out.println("Expression Collector Arguments >>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+									//Trying to see if some already resolved parameters can be used to find other parameters using resolved API
+									List <Integer> similarity = new ArrayList<Integer>();
+									for(String argument: e.getArgumentList()){
+										List <String> expressionCollectorArg = Arrays.asList(argument.replace(" ", "").split("\\,"));
+										//printList(expressionCollectorArg);
+										if(codeArguments.size() != expressionCollectorArg.size()){
+											//System.out.println("getInformationFromParameter: Something is wrong!!");
+											return false;
+										}
+										else{
+											int matches=0;
+											for(int counter = 0; counter < codeArguments.size(); counter++) {
+												//System.out.println("getInformationFromParameter:codeArgument "+codeArguments.get(counter));
+												if(codeArguments.get(counter).equals(expressionCollectorArg.get(counter)) == true){
+													//System.out.println("getInformationFromParameter: For " +e.getExpression() + "argument number " + counter + " matches");
+													matches++;
 												}
 											}
+											similarity.add(matches); //Find out how many signature matches (matches <= codeArguments.size() and matches <= expressionCollectorArg.size())
 										}
-										//System.out.println("Code Arguments >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-										//printList(codeArguments);
-										//System.out.println("Expression Collector Arguments >>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-										//Trying to see if some already resolved parameters can be used to find other parameters using resolved API
-										List <Integer> similarity = new ArrayList<Integer>();
-										for(String argument: e.getArgumentList()){
-											List <String> expressionCollectorArg = Arrays.asList(argument.replace(" ", "").split("\\,"));
-											//printList(expressionCollectorArg);
-											if(codeArguments.size() != expressionCollectorArg.size()){
-												//System.out.println("getInformationFromParameter: Something is wrong!!");
-												return false;
-											}
-											else{
-												int matches=0;
-												for(int counter = 0; counter < codeArguments.size(); counter++) {
-													//System.out.println("getInformationFromParameter:codeArgument "+codeArguments.get(counter));
-													if(codeArguments.get(counter).equals(expressionCollectorArg.get(counter)) == true){
-														//System.out.println("getInformationFromParameter: For " +e.getExpression() + "argument number " + counter + " matches");
-														matches++;
-													}
-										       }
-											   similarity.add(matches); //Find out how many signature matches (matches <= codeArguments.size() and matches <= expressionCollectorArg.size())
-											}
-										}
-										//System.out.println("Maximum similarity : " +(float)Collections.max(similarity)/codeArguments.size());
-										//System.out.println("Collisions: "+ countList(similarity, Collections.max(similarity)));
-										if(countList(similarity, Collections.max(similarity)) == 1){
-											int counter = 0;
-											for(SimpleName name: (List<SimpleName>)node.arguments()){
-												counter++;
-												for(Variables tempElement: undeclaredVariables){
-													if(tempElement.name.equals(name.toString())==true){
-														String temp = (e.getArgumentList().get(similarity.indexOf(Collections.max(similarity))));
-														tempElement.variableType.add(temp.replace(" ", "").split("\\,")[counter-1]);
-													}
+									}
+									//System.out.println("Maximum similarity : " +(float)Collections.max(similarity)/codeArguments.size());
+									//System.out.println("Collisions: "+ countList(similarity, Collections.max(similarity)));
+									if(countList(similarity, Collections.max(similarity)) == 1){
+										int counter = 0;
+										for(SimpleName name: (List<SimpleName>)node.arguments()){
+											counter++;
+											for(Variables tempElement: undeclaredVariables){
+												if(tempElement.name.equals(name.toString())==true){
+													String temp = (e.getArgumentList().get(similarity.indexOf(Collections.max(similarity))));
+													tempElement.variableType.add(temp.replace(" ", "").split("\\,")[counter-1]);
 												}
 											}
 										}
 									}
+								}
 								return true;
 							}
 						});
@@ -1265,54 +1281,54 @@ public class Test2 {
 		}
 		return undeclaredVariables;
 	}
-	
+
 	static List<Variables> fillUndeclaredVariablesFromBaker(DataCollector data,List<Variables> undeclaredVariables){
-			//Find elements with api_type
-			for(Variables element:undeclaredVariables){
-				for(DataCollectorSchema temp:data.listClasses){
-					if(temp.type.equals("api_type"))
-					{
-						for(String tempElement:temp.elements){
-							if(tempElement.contains(element.name) == true && temp.elements.size() == 1){
-								element.packageImport = tempElement;
-							}						
-						}
+		//Find elements with api_type
+		for(Variables element:undeclaredVariables){
+			for(DataCollectorSchema temp:data.listClasses){
+				if(temp.type.equals("api_type"))
+				{
+					for(String tempElement:temp.elements){
+						if(tempElement.contains(element.name) == true && temp.elements.size() == 1){
+							element.packageImport = tempElement;
+						}						
 					}
 				}
 			}
-			return undeclaredVariables;
+		}
+		return undeclaredVariables;
 	}
-	
+
 	private static void AddStatements(String source)throws MalformedTreeException, BadLocationException, CoreException {
-		 
+
 		final CompilationUnit root = parseStatementsCompilationUnit(source);
- 
+
 		// create a ASTRewrite
 		AST ast = root.getAST();
 		ASTRewrite rewriter = ASTRewrite.create(ast);
- 
+
 		// for getting insertion position
 		TypeDeclaration typeDecl = (TypeDeclaration) root.types().get(0);
 		MethodDeclaration methodDecl = typeDecl.getMethods()[0];
 		Block block = methodDecl.getBody();
- 
+
 		// create new statements for insertion
 		MethodInvocation newInvocation = ast.newMethodInvocation();
 		newInvocation.setName(ast.newSimpleName("add"));
 		Statement newStatement = ast.newExpressionStatement(newInvocation);
- 
+
 		//create ListRewrite
 		ListRewrite listRewrite = rewriter.getListRewrite(block, Block.STATEMENTS_PROPERTY);
 		listRewrite.insertFirst(newStatement, null);
- 
+
 		TextEdit edits = rewriter.rewriteAST();
 		IDocument doc = new Document(source);
-		
+
 		edits.apply(doc);
 		System.out.println(doc.get());
 	}
-	
-	
+
+
 	static void rewriteSource(String source){
 		Document document = new org.eclipse.jface.text.Document(source);
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
@@ -1321,23 +1337,23 @@ public class Test2 {
 
 		final CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 		ASTRewrite rewriter = ASTRewrite.create(cu.getAST());
-		
+
 		AST ast = cu.getAST();
-		
+
 		// for getting insertion position
 		TypeDeclaration typeDecl = (TypeDeclaration) cu.types().get(0);
 		MethodDeclaration methodDecl = typeDecl.getMethods()[0];
 		Block block = methodDecl.getBody();
- 
+
 		// create new statements for insertion
 		MethodInvocation newInvocation = (MethodInvocation) ast.newMethodInvocation();
 		newInvocation.setName(ast.newSimpleName("add"));
 		Statement newStatement = ast.newExpressionStatement(newInvocation);
- 
+
 		//create ListRewrite
 		ListRewrite listRewrite = rewriter.getListRewrite(block, Block.STATEMENTS_PROPERTY);
 		listRewrite.insertFirst(newStatement, null);
- 
+
 		TextEdit edits = null;
 		try {
 			edits = rewriter.rewriteAST();
@@ -1346,7 +1362,7 @@ public class Test2 {
 			e.printStackTrace();
 		}
 		IDocument doc = new Document(source);
-		
+
 		try {
 			edits.apply(doc);
 		} catch (MalformedTreeException | BadLocationException e) {
@@ -1355,7 +1371,7 @@ public class Test2 {
 		}
 		System.out.println(doc.get());
 	}
-	
+
 	static boolean checkReturnStatement(String source, String methodName){
 		final CompilationUnit root = parseStatementsCompilationUnit(source);
 		List<String> returnList = new ArrayList<String>();
@@ -1364,17 +1380,17 @@ public class Test2 {
 		root.accept(new ASTVisitor() {
 			public boolean visit(MethodDeclaration node) {
 				if(node.isConstructor() != true && node.getName().toString().equals(methodName) == true){
-				//System.out.println("Method Name: " + node.getName().toString());
-				//System.out.println("Return Type of the MethodDeclaration is :: " +node.getReturnType2().toString());
-				returnList.add(node.getName().toString());
-				node.accept(new ASTVisitor(){
-					public boolean visit(ReturnStatement node1){
-						//System.out.println("Return Type in MethodBody ::  " +node1.getExpression().toString() );
-						returnList.clear();
-						return true;
-					}
-				});
-				return true;
+					//System.out.println("Method Name: " + node.getName().toString());
+					//System.out.println("Return Type of the MethodDeclaration is :: " +node.getReturnType2().toString());
+					returnList.add(node.getName().toString());
+					node.accept(new ASTVisitor(){
+						public boolean visit(ReturnStatement node1){
+							//System.out.println("Return Type in MethodBody ::  " +node1.getExpression().toString() );
+							returnList.clear();
+							return true;
+						}
+					});
+					return true;
 				}
 				else
 					return false;
@@ -1385,7 +1401,7 @@ public class Test2 {
 		else
 			return false;
 	}
-	
+
 	static void Test1(){
 		String source = "if(cn == null){\n"
 				+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
@@ -1481,12 +1497,24 @@ public class Test2 {
 		List<String> importStatements = getImportStatement(source);
 		List<ExpressionCollector>hints = extractHints(source);
 		List<ExpressionCollector>returnValue4 = findReturnStatements(source); //Return Values
+		System.out.println("=============================findReturnStatements=====================================================");
+		returnValue4.stream().forEach(p->p.printData());
+		System.out.println("===================================================================================");
 		List<ExpressionCollector>returnValue3 = findExpressionStatement(data,source);
+		System.out.println("===============================findExpressionStatement====================================================");
+		returnValue3.stream().forEach(p->p.printData());
+		System.out.println("===================================================================================");
 		List<ExpressionCollector>returnValue2 = findTypeParameter(data,source); //MethodInvocation as expression
+		System.out.println("=================================findTypeParameter==================================================");
+		returnValue2.stream().forEach(p->p.printData());
+		System.out.println("===================================================================================");
 		List<ExpressionCollector>returnValue =  findLeftNodeType(data,source); //Assignment
-		
+		System.out.println("=====================================findLeftNodeType==============================================");
+		returnValue.stream().forEach(p->p.printData());
+		System.out.println("===================================================================================");
+
 		//TODO: Need to check if addALL actually works for us!
-		
+
 		returnValue.addAll(returnValue4);
 		returnValue.addAll(returnValue2);
 		returnValue.addAll(returnValue3);
@@ -1511,59 +1539,59 @@ public class Test2 {
 		undeclaredVariables = fillLineNumber(undeclaredVariables, source);
 
 
-//		for(Variables element:undeclaredVariables){
-//			System.out.println("-----------------###----------------");
-//			System.out.println(element.name);
-//			System.out.println(element.type);
-//			System.out.println(element.variableType);
-//			System.out.println(element.packageImport);
-//			//			System.out.println(element.returnType);	
-//			//			System.out.println(element.lineNumber);
-//			System.out.println(element.lineNumber);
-//			//			System.out.println("------------------------------------");
-//		}
-				for(Variables element:undeclaredVariables){
-					
-					if(element.type == "variable"){
-						int count=0;
-						System.out.println("#####################################");
-						System.out.println("Undeclared Variables: " +element.name + " , " + element.variableType);
-						List<Variables> declaredVariables =new ArrayList<Variables>(); 
-						String methodName = getVariablesInScope(source, element.name);
-						declaredVariables = getVariablesAndImport(source,methodName );
-						declaredVariables = fillLineNumber(declaredVariables, source);
-						if(element.variableType.size()==1){
-							for(Variables e:declaredVariables)
-								if((e.variableType.get(0).replace(" ", "")).equals((element.variableType.get(0)).replace(" ", "")) == true){
-									System.out.println("Possible Options : (Which variables can be substituted)");
-									System.out.println("------------------------------------");
-									System.out.println(e.name);
-				//					System.out.println(element.type);
-									System.out.println(e.variableType);
-				//					System.out.println(element.packageImport);
-				//					System.out.println(element.returnType);	
-				//					System.out.println(element.lineNumber);
-									System.out.println(e.lineNumber);
-				//					System.out.println("------------------------------------");
-									count++;
-								}
-							if(count==0)
-								System.out.println("Variable " + element.name +" needs declaration of type " + element.variableType );
-						}
-						else
-							System.out.println("Variable " + element.name +" could not be resolved" );
-					}
-					else if(element.type == "type" && element.packageImport != ""){
-						System.out.println("#####################################");
-						if(importStatements.contains(element.packageImport) == false)
-							System.out.println("Add Imports : " +element.packageImport + " "+element.name);
-					}
-				}
+		//		for(Variables element:undeclaredVariables){
+		//			System.out.println("-----------------###----------------");
+		//			System.out.println(element.name);
+		//			System.out.println(element.type);
+		//			System.out.println(element.variableType);
+		//			System.out.println(element.packageImport);
+		//			//			System.out.println(element.returnType);	
+		//			//			System.out.println(element.lineNumber);
+		//			System.out.println(element.lineNumber);
+		//			//			System.out.println("------------------------------------");
+		//		}
+		for(Variables element:undeclaredVariables){
+
+			if(element.type == "variable"){
+				int count=0;
 				System.out.println("#####################################");
-				System.out.println("Consider the following hints");
-				for(ExpressionCollector element:hints){
-					System.out.println(element.getConstantExpression() + " might need to be changed in the expression " + element.getExpression());
+				System.out.println("Undeclared Variables: " +element.name + " , " + element.variableType);
+				List<Variables> declaredVariables =new ArrayList<Variables>(); 
+				String methodName = getVariablesInScope(source, element.name);
+				declaredVariables = getVariablesAndImport(source,methodName );
+				declaredVariables = fillLineNumber(declaredVariables, source);
+				if(element.variableType.size()==1){
+					for(Variables e:declaredVariables)
+						if((e.variableType.get(0).replace(" ", "")).equals((element.variableType.get(0)).replace(" ", "")) == true){
+							System.out.println("Possible Options : (Which variables can be substituted)");
+							System.out.println("------------------------------------");
+							System.out.println(e.name);
+							//					System.out.println(element.type);
+							System.out.println(e.variableType);
+							//					System.out.println(element.packageImport);
+							//					System.out.println(element.returnType);	
+							//					System.out.println(element.lineNumber);
+							System.out.println(e.lineNumber);
+							//					System.out.println("------------------------------------");
+							count++;
+						}
+					if(count==0)
+						System.out.println("Variable " + element.name +" needs declaration of type " + element.variableType );
 				}
+				else
+					System.out.println("Variable " + element.name +" could not be resolved" );
+			}
+			else if(element.type == "type" && element.packageImport != ""){
+				System.out.println("#####################################");
+				if(importStatements.contains(element.packageImport) == false)
+					System.out.println("Add Imports : " +element.packageImport + " "+element.name);
+			}
+		}
+		System.out.println("#####################################");
+		System.out.println("Consider the following hints");
+		for(ExpressionCollector element:hints){
+			System.out.println(element.getConstantExpression() + " might need to be changed in the expression " + element.getExpression());
+		}
 	}
 	private static List<ExpressionCollector> findReturnStatements(String tempString) {
 		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
@@ -1572,10 +1600,10 @@ public class Test2 {
 		if(root == null)
 			System.out.println("Something is wrong!");
 		//find all method declaration
-			//find all return Statements
-				//if resolvebinding is null
-					//get the type from the method signature
-		
+		//find all return Statements
+		//if resolvebinding is null
+		//get the type from the method signature
+
 		root.accept(new ASTVisitor() {
 			public boolean visit(MethodDeclaration node) {
 				node.accept(new ASTVisitor(){
@@ -1601,35 +1629,35 @@ public class Test2 {
 				return false;
 			}
 		});
-		
+
 		return returnValue;
 	}
-	
-	
+
+
 	public static void Test6(){
 		DataCollector data =  null;
-				String source = "if(cn == null){\n"
-						+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
-						+ "Class.forName(driver); \n"
-						+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
-						+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
-						+ "System.out.println(\"test\");\n";
+		String source = "if(cn == null){\n"
+				+ "String driver = \"com.mysql.jdbc.Driver\"; \n"
+				+ "Class.forName(driver); \n"
+				+ "dbHost = \"jdbc:mysql://\"+dbHost;\n"
+				+ "cn = DriverManager.getConnection(dbHost,dbUser,dbPassword);\n"
+				+ "System.out.println(\"test\");\n";
 
-				String tempString = enclosedClasses(source);
-				try {
-					data =  getTypesFromBaker(tempString);
-				} catch (FileNotFoundException | UnsupportedEncodingException
-						| InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				System.out.println("Done!");
-				//printList(elementsMatchFromBaker(data,"Class.forName"));
+		String tempString = enclosedClasses(source);
+		try {
+			data =  getTypesFromBaker(tempString);
+		} catch (FileNotFoundException | UnsupportedEncodingException
+				| InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Done!");
+		//printList(elementsMatchFromBaker(data,"Class.forName"));
 
-				List<ExpressionCollector>returnValue =  findLeftNodeType(data,tempString);
-				
-				returnValue.stream().forEach(p->p.printData());
-			
+		List<ExpressionCollector>returnValue =  findLeftNodeType(data,tempString);
+
+		returnValue.stream().forEach(p->p.printData());
+
 	}
 
 	static void Test7(){
@@ -1642,22 +1670,22 @@ public class Test2 {
 		}
 
 		DataCollector data=null;
-		
+
 		try {
 			data =  getTypesFromBaker(source);
 		} catch (FileNotFoundException | UnsupportedEncodingException| InterruptedException e) {
 			e.printStackTrace();
 		}
 		System.out.println("Done!");
-		
+
 		System.out.println("Baker Data =======================");
 		data.printData();
-		
+
 		List<ExpressionCollector>returnValue3 = findExpressionStatement(data,source);
 		returnValue3.stream().forEach(a->a.printData());
 	}
-	
-	
+
+
 	static void Test8() throws MalformedTreeException, BadLocationException, CoreException{
 		String source=null;
 		try {
@@ -1668,41 +1696,41 @@ public class Test2 {
 		}
 		//checkReturnStatement(source);
 		//rewriteSource(source);
-//
-//		   Document document= new Document(source);
-//
-//		   // creation of DOM/AST from a ICompilationUnit
-//		   CompilationUnit astRoot = parseStatementsCompilationUnit(source);
-//
-//		   // start record of the modifications
-//		   astRoot.recordModifications();
-//
-//		   // modify the AST
-//		   TypeDeclaration typeDeclaration = (TypeDeclaration)astRoot.types().get(0);
-//		   SimpleName newName = astRoot.getAST().newSimpleName("Y");
-//		   typeDeclaration.setName(newName);
-//
-//		   // computation of the text edits
-//		  // TextEdit edits = astRoot.rewrite(document, astRoot.getJavaProject().getOptions(true));
-//
-//		   // computation of the new source code
-//		  // edits.apply(document);
-//		   String newSource = document.get();
-		
-		 CompilationUnit sourceCu = parseStatementsCompilationUnit(source);
-		 CompilationUnit targetCu = parseStatementsCompilationUnit(source);
-		 
-		 ASTRewrite rewriter = ASTRewrite.create(targetCu.getAST());            
-		 IDocument targetDoc = new Document(new String(source.toCharArray()));
-		
-		
+		//
+		//		   Document document= new Document(source);
+		//
+		//		   // creation of DOM/AST from a ICompilationUnit
+		//		   CompilationUnit astRoot = parseStatementsCompilationUnit(source);
+		//
+		//		   // start record of the modifications
+		//		   astRoot.recordModifications();
+		//
+		//		   // modify the AST
+		//		   TypeDeclaration typeDeclaration = (TypeDeclaration)astRoot.types().get(0);
+		//		   SimpleName newName = astRoot.getAST().newSimpleName("Y");
+		//		   typeDeclaration.setName(newName);
+		//
+		//		   // computation of the text edits
+		//		  // TextEdit edits = astRoot.rewrite(document, astRoot.getJavaProject().getOptions(true));
+		//
+		//		   // computation of the new source code
+		//		  // edits.apply(document);
+		//		   String newSource = document.get();
+
+		CompilationUnit sourceCu = parseStatementsCompilationUnit(source);
+		CompilationUnit targetCu = parseStatementsCompilationUnit(source);
+
+		ASTRewrite rewriter = ASTRewrite.create(targetCu.getAST());            
+		IDocument targetDoc = new Document(new String(source.toCharArray()));
+
+
 	}
-	
+
 	static void Test9(){
 
 		String code = "public class TestFormatter{public static void main(String[] args){System.out.println(\"Hello World\");}}";
 		CodeFormatter codeFormatter = ToolFactory.createCodeFormatter(null);
- 
+
 		TextEdit textEdit = codeFormatter.format(CodeFormatter.K_COMPILATION_UNIT, code, 0, code.length(), 0, null);
 		IDocument doc = new Document(code);
 		try {
@@ -1714,7 +1742,7 @@ public class Test2 {
 			e.printStackTrace();
 		}
 	}
-	
+
 	static void Test10(){
 		String doc=null;
 		try {
@@ -1725,7 +1753,7 @@ public class Test2 {
 		}
 		System.out.println(addReturnStatements(doc));
 	}
-	
+
 	public static String addReturnStatements(String doc){
 
 		Document document = new Document(doc);
@@ -1751,6 +1779,9 @@ public class Test2 {
 				Block block = methodDecl.getBody();
 
 				System.out.println("Method Return Type :: " + methodDecl.getReturnType2().toString());
+				if(methodDecl.getReturnType2().toString().equals("void") == true)
+					return doc;
+
 				String returnTypeVariable = "return" + methodDecl.getReturnType2().toString();
 
 
@@ -1768,30 +1799,30 @@ public class Test2 {
 				listRewriteSVD.insertFirst(result, null);
 
 				TextEdit edits = rewriter.rewriteAST(document, null);
-				*/
+				 */
 				ReturnStatement newReturnStatement = ast.newReturnStatement();
 				newReturnStatement.setExpression(ast.newSimpleName(returnTypeVariable));
 
 				ListRewrite listRewrite = rewriter.getListRewrite(block, Block.STATEMENTS_PROPERTY);
 				listRewrite.insertLast(newReturnStatement, null);
-				
+
 				TextEdit edits = rewriter.rewriteAST(document, null);
 
-				 try {
-						UndoEdit undo = edits.apply(document);
-					} catch (MalformedTreeException | BadLocationException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				 
+				try {
+					UndoEdit undo = edits.apply(document);
+				} catch (MalformedTreeException | BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
 			}
 		}
 
 
-	//	System.out.println(document.get().toCharArray());
+		//	System.out.println(document.get().toCharArray());
 		return document.get().toString();
 	}
-	
+
 	public static void Test11(){
 		String source=null;
 		try {
@@ -1814,7 +1845,7 @@ public class Test2 {
 		List<ExpressionCollector> returnValue = extractHints(tempString);
 		returnValue.stream().forEach(a->a.printData());
 	} 
-	
+
 	//To find constant expression
 	static List<ExpressionCollector> extractHints(String tempString){
 
@@ -1824,72 +1855,80 @@ public class Test2 {
 			System.out.println("Something is wrong!");
 
 		root.accept(new ASTVisitor() {
-			public boolean visit( VariableDeclarationStatement node) {
-				node.accept(new ASTVisitor(){
-					public boolean visit(VariableDeclarationFragment node1){
-//						System.out.println("################# VariableDeclarationFragment :: " + node1.getInitializer().toString());//.resolveConstantExpressionValue());
-						if(node1.getInitializer().resolveConstantExpressionValue() != null){
-							hintValue.add(new ExpressionCollector(node1.toString(),node1.getInitializer().resolveConstantExpressionValue().toString()));
-							System.out.println("RIGHT!");
-						}
-						node1.accept(new ASTVisitor(){
-							public boolean visit(MethodInvocation node2){
-//								System.out.println("MI>>>>>>>>>>>>>" +node2.toString());
-								List<Expression> temp = node2.arguments();
-								for(int i=0;i<temp.size();i++){
-									//System.out.println("MethodInvocation inside VariableDeclarationStatement:: ################" +temp.get(i).resolveConstantExpressionValue());
-									if(temp.get(i).resolveConstantExpressionValue() != null){
-										hintValue.add(new ExpressionCollector(node1.toString(),temp.get(i).resolveConstantExpressionValue().toString()));
-									//	System.out.println("RIGHT!");
+			public boolean visit(MethodDeclaration root1){
+				//System.out.println("new MethodDeclaration " +root1.getName());
+				root1.accept(new ASTVisitor(){
+					public boolean visit( VariableDeclarationStatement node) {
+						node.accept(new ASTVisitor(){
+							public boolean visit(VariableDeclarationFragment node1){
+								if(node1.getInitializer()!= null){
+									System.out.println("################# VariableDeclarationFragment :: " + node1.getInitializer().toString());//.resolveConstantExpressionValue());
+									if(node1.getInitializer().resolveConstantExpressionValue() != null){
+										hintValue.add(new ExpressionCollector(node1.toString(),node1.getInitializer().resolveConstantExpressionValue().toString()));
+										System.out.println("RIGHT!");
 									}
+									node1.accept(new ASTVisitor(){
+										public boolean visit(MethodInvocation node2){
+											System.out.println("MI>>>>>>>>>>>>>" +node2.toString());
+											List<Expression> temp = node2.arguments();
+											for(int i=0;i<temp.size();i++){
+												//System.out.println("MethodInvocation inside VariableDeclarationStatement:: ################" +temp.get(i).resolveConstantExpressionValue());
+												if(temp.get(i).resolveConstantExpressionValue() != null){
+													hintValue.add(new ExpressionCollector(node1.toString(),temp.get(i).resolveConstantExpressionValue().toString()));
+													//	System.out.println("RIGHT!");
+												}
+											}
+											System.out.println("MethodInvocation inside VariableDeclarationStatement:: " + node2.arguments()); 
+											return true;
+
+										}
+										public boolean visit(ClassInstanceCreation node2){
+											System.out.println("ClassInstanceCreate :: " +node2.toString());
+											System.out.println("ClassInstanceCreate :: " +node2.arguments());
+											for(int i=0;i<node2.arguments().size();i++){
+												if(((Expression)node2.arguments().get(i)).resolveConstantExpressionValue()!= null){
+													hintValue.add(new ExpressionCollector(node1.toString(),((Expression)node2.arguments().get(i)).resolveConstantExpressionValue().toString()));
+													//	System.out.println(((Expression)node2.arguments().get(i)).resolveConstantExpressionValue().toString());
+												}
+											}
+											return true;
+										}
+										public boolean visit(TypeLiteral node2){
+											System.out.println("TypeLiteral : "+node2.toString());
+											hintValue.add(new ExpressionCollector(node1.toString(),node2.toString()));
+											return true;
+										}
+									});			
 								}
-								//System.out.println("MethodInvocation inside VariableDeclarationStatement:: " + node2.arguments()); 
-							    return true;
-								
+								return false;
 							}
-							public boolean visit(ClassInstanceCreation node2){
-//								System.out.println("ClassInstanceCreate :: " +node2.toString());
-//								System.out.println("ClassInstanceCreate :: " +node2.arguments());
-								for(int i=0;i<node2.arguments().size();i++){
-									if(((Expression)node2.arguments().get(i)).resolveConstantExpressionValue()!= null){
-										hintValue.add(new ExpressionCollector(node1.toString(),((Expression)node2.arguments().get(i)).resolveConstantExpressionValue().toString()));
-									//	System.out.println(((Expression)node2.arguments().get(i)).resolveConstantExpressionValue().toString());
-									}
-								}
-								return true;
-							}
-							public boolean visit(TypeLiteral node2){
-//								System.out.println("TypeLiteral : "+node2.toString());
-								hintValue.add(new ExpressionCollector(node1.toString(),node2.toString()));
-								return true;
-							}
-						});						
+						});
+
 						return false;
 					}
 
+					public boolean visit(MethodInvocation node){
+						System.out.println("OUTTAMI >>>>>>>>>>>>>>>>>>" + node.toString());
+						System.out.println(node.arguments());
+						List<Expression> temp = node.arguments();
+						for(int i=0;i<temp.size();i++){
+							//System.out.println(" MethodInvocation:: ################ " +temp.get(i).resolveConstantExpressionValue());
+							if(temp.get(i).resolveConstantExpressionValue() != null){
+								//System.out.println("RIGHT!");
+								hintValue.add(new ExpressionCollector(node.toString(),temp.get(i).resolveConstantExpressionValue().toString()));
+							}
+						}
+						return false;
+
+					}
 				});
 				return false;
 			}
-			
-			public boolean visit(MethodInvocation node){
-				//System.out.println("OUTTAMI >>>>>>>>>>>>>>>>>>" + node.toString());
-				List<Expression> temp = node.arguments();
-				for(int i=0;i<temp.size();i++){
-					//System.out.println(" MethodInvocation:: ################ " +temp.get(i).resolveConstantExpressionValue());
-					if(temp.get(i).resolveConstantExpressionValue() != null){
-						//System.out.println("RIGHT!");
-						hintValue.add(new ExpressionCollector(node.toString(),temp.get(i).resolveConstantExpressionValue().toString()));
-					}
-				}
-				//System.out.print("MethodInvocation:: " + node.arguments()); 
-			    return false;
-				
-			}
 		});
-		
+
 		return hintValue;
 	}
-	
+
 	static void Test14(){
 		String source=null;
 		try {
@@ -1900,7 +1939,7 @@ public class Test2 {
 		}
 		source = addReturnStatements(source);
 		List<Variables> undeclaredVariables = checkVariableDeclaration(source);
-		
+
 		for(Variables element:undeclaredVariables){
 			if(element.type.equals("type") != true){
 				System.out.println("------------------------------------");
@@ -1929,13 +1968,21 @@ public class Test2 {
 	}
 	public static void Test16(){
 		String source=null;
+		DataCollector data = null;
 		try {
 			source = readFile("Snippet.txt");
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		checkVariableDeclaration(source);
+		try {
+			data =  getTypesFromBaker(source);
+		} catch (FileNotFoundException | UnsupportedEncodingException| InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println("-------------------------------------------");
+		List<ExpressionCollector>returnValue3 = findLeftNodeType(data,source);
+		returnValue3.stream().forEach(a->a.printData());
 	}
 	public static List<String> getImportStatement(String source){
 		List<String> ImportStatements = new ArrayList<String>();
@@ -1951,7 +1998,7 @@ public class Test2 {
 		});
 		return ImportStatements;
 	}
-	
+
 	public static void main(String args[]) throws InterruptedException, IOException{
 
 		//checkVariableDeclaration();
@@ -1968,14 +2015,15 @@ public class Test2 {
 		//getVariablesAndImport();
 		//		getVariablesInScope();
 		//getVariablesAndImport("tesx");
-//		try {
-//			Test8();
-//		} catch (MalformedTreeException | BadLocationException | CoreException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		Test16();
+		//		try {
+		//			Test8();
+		//		} catch (MalformedTreeException | BadLocationException | CoreException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}
+		//Test16();
 		Test5();
-//		convertClasstoPackage2("java.sql.Connection");
+		//		convertClasstoPackage2("java.sql.Connection");
 	}
+
 }

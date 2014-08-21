@@ -1,32 +1,26 @@
+package collections;
 
-// Reads xml file and returns different tags in separate methods. 
-// For more tags, use an array.
-package scan;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+ 
+public class ListFrequency {
+ 
+    public static void main(String a[]){
+    	int count;
+        List<String> ll = new ArrayList<String>();
+        ll.add("one");
+        ll.add("two");
+        ll.add("three");
+        ll.add("four");
+        ll.add("two");
+        ll.add("three");
+        ll.add("two");
+        ll.add("one");
+        System.out.println("Actual list: "+ll);
 
-import java.io.File;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+	count = Collections.frequency(list, "B"); 
 
-/*
- * @author Marcel Patek
- * @version 1
- * @since July 2013
- * 
- */
-public class JAXBReader {
-    String Reader1() {
-        try {
-            //Settings settings = JAXB.unmarshall(new File("file.xml"), Settings.class);
-            File file = new File("nboscan_settings.xml");
+    }
 
-		JAXBContext jaxbContext = JAXBContext.newInstance(Customer.class);
-		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-		Customer customer = (Customer) jaxbUnmarshaller.unmarshal(new File("C:\\file.xml"));
-
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
-        return null;
-        }
-        }
+}
