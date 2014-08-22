@@ -1,0 +1,110 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{algpseudocode}
+\usepackage{dcolumn}
+\usepackage{algorithm}
+\usepackage{listings}
+\usepackage{array}
+\usepackage{amssymb}
+\usepackage{balance}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+\usepackage{pgfplots}
+\usepackage{epstopdf}
+\usepackage{times}
+\usepackage{url}
+\usepackage{multirow}
+\usepackage{subfig}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{color, colortbl} 
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{environ}
+\usepackage{float}
+
+
+\newcommand{\toolname}{SmartCopy}
+\newcommand{\developer}{Jane}
+\newcommand{\spacebeforecaption}{-0.3cm}
+\newcommand{\sourcecode}{\texttt}
+\newcommand{\term}{\emph}
+
+
+\definecolor{Gray}{gray}{0.9}
+
+\clubpenalty = 10000
+\widowpenalty = 10000
+\displaywidowpenalty = 10000
+
+\sloppy{}
+
+\usepackage[T1]{fontenc}
+\usepackage{inconsolata}
+
+\usepackage{color}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{pred}{rgb}{0.9,0,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\newenvironment{developersaid}
+{ 
+\vspace{-2mm}
+\begin{quotation}\noindent
+}
+{
+\end{quotation}
+\vspace{-2mm}
+}
+
+\newenvironment{result}
+{ 
+\vspace{-2mm}
+\begin{table}[H]
+\center
+\begin{tabular}{|p{0.9\linewidth}|}
+\hline\small
+}
+{\\\hline\end{tabular}
+\endcenter
+\end{table}
+\vspace{-4mm}\normalsize}
+
+\lstdefinestyle{javastyle}{
+frame=bottomline,
+language=Java,
+basicstyle=\ttfamily\footnotesize,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{pgreen},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pred},
+  moredelim=[il][\textcolor{pgrey}]{$$},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+
+\floatstyle{plain}
+\newfloat{code}{t}{lop}
+\floatname{code}{Code}
+
+
+\ifCLASSINFOpdf
+\else
+\fi
+\hyphenation{op-tical net-works semi-conduc-tor}
+\begin{document}
+
+\title{Integrating Context-Free Code Examples into\\Local Code Context}
+
+\author{\IEEEauthorblockN{Xi Ge and Emerson Murphy-Hill}
+\IEEEauthorblockA{Department of Computer Science, NC State University\\
+       Raleigh, NC, USA\\
+xge@ncsu.edu\space\space emerson@csc.ncsu.edu}}
+
+\maketitle
