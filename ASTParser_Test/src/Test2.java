@@ -327,7 +327,7 @@ public class Test2 {
 			return(pack);
 		}
 		System.out.println("convertClasstoPackage:: Package not found!!");
-		return("convertClasstoPackage:: Package not found!!!!");
+		return("not found");
 	}
 
 	/*
@@ -415,31 +415,6 @@ public class Test2 {
 
 	static List<Variables> getVariablesAndImport(String source,String methodName){
 
-		//		String source = "import java.util.ArrayList;\n"
-		//				+ "import java.util.List;\n"
-		//				+ "\n"
-		//				+ "class abc{\n"
-		//				+ "public void test(){\n"
-		//				+ "	RiWordnet wordnet = new RiWordnet(null);\n"
-		//				+ "\n"
-		//				+ "	String pos;\n"
-		//				+ "\n"
-		//				+ "List<String> listStart = FindSubstring(wordnet,start);\n"
-		//				+ "	List<String> listEnd = FindSubstring(wordnet, end);\n "
-		//				+ "	List<Float> distance = new ArrayList<Float>();\n "
-		//				+ "	for(String s:listStart)\n"
-		//				+ "		for(String e:listEnd){\n"
-		//				+ "			pos = wordnet.getBestPos(s);\n"
-		//				+ "			dist = 1- wordnet.getDistance(s,e,pos);\n"
-		//				+ "			distance.add(dist);\n"
-		//				+ "		}\n"
-		//				+ "	return Collections.max(distance);"
-		//				+ "}\n"
-		//				+ "public void test2(){\n"
-		//				+ "int a,b,c,d;\n"
-		//				+ "}\n"
-		//				+ "}\n";
-
 		List<Variables> returnDeclared = new ArrayList<Variables>();
 		//source = enclosedClasses(source);
 
@@ -457,8 +432,17 @@ public class Test2 {
 			public boolean visit(VariableDeclarationFragment node) {
 				if(node.resolveBinding() != null){
 					ASTNode temp = (ASTNode)node;
-					while(temp.getNodeType() != ASTNode.VARIABLE_DECLARATION_STATEMENT)
+					while(temp.getNodeType() != ASTNode.VARIABLE_DECLARATION_STATEMENT){
+						//System.out.println(temp.toString());
 						temp=temp.getParent();
+						//for cases where there are only VariableDeclarationFragments
+						if(temp == null){
+							temp = (ASTNode)node;
+							returnDeclared.add(new Variables(node.getName().toString(),"variable",((VariableDeclarationFragment)temp).resolveBinding().getType().getQualifiedName(),"","NA",root.getLineNumber(temp.getStartPosition())));
+							//System.out.println(((VariableDeclarationFragment)temp).resolveBinding().getType().getName().toString());
+							return false;
+						}
+					}
 					returnDeclared.add(new Variables(node.getName().toString(),"variable",((VariableDeclarationStatement) temp).getType().toString(),"","NA",root.getLineNumber(temp.getStartPosition())));
 				}
 				return false;
@@ -945,7 +929,12 @@ public class Test2 {
 		root.accept(new ASTVisitor() {
 			public boolean visit(Assignment node) {
 				System.out.println("findLeftNodeType >>>>>>>>>> :: " + node.toString());
-				expressionStatement.add(node.getRightHandSide());
+				if(node.getRightHandSide().resolveConstantExpressionValue() != null){
+					System.out.println("vivek " + node.getRightHandSide().resolveTypeBinding().getTypeDeclaration().getQualifiedName());
+					returnValue.add(new ExpressionCollector(node.toString(),node.getLeftHandSide().toString(), node.getRightHandSide().resolveTypeBinding().getTypeDeclaration().getQualifiedName(),"NA"));
+				}
+				else
+					expressionStatement.add(node.getRightHandSide());
 				return true;	
 			}
 		});
@@ -953,6 +942,7 @@ public class Test2 {
 			Expression node = e;
 			System.out.println("findLeftNodeType expression :: " + node.toString());
 			node.accept(new ASTVisitor(){
+			
 				public boolean visit(MethodInvocation node){
 					int noArguments=-1;
 					String className =null;
@@ -1026,7 +1016,7 @@ public class Test2 {
 				 */
 				public boolean visit(InfixExpression node){
 
-					//System.out.println("=============================Infix Expression : " +node.toString());
+					System.out.println("=============================Infix Expression : " +node.toString());
 					//System.out.println(node.hasExtendedOperands());
 					//System.out.println("================================== "+ node.getLeftOperand().toString());
 					if(node.getLeftOperand().resolveTypeBinding() != null){
@@ -1200,14 +1190,16 @@ public class Test2 {
 				if(element.name.equals("string1") && e.getVariableName().equals("string1"))
 					System.out.println("It's here");
 				if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==false) && (e.getReturnType().equals("unresolved") ==false)){
-					element.variableType.add(e.getReturnType());
-					element.packageImport = convertClasstoPackage2(((element.variableType).get(0)).replace(" ",""));	
-					//System.out.println(element.name + " , " + element.variableType + " , " + element.packageImport);
+					if(element.variableType.contains(e.getReturnType()) == false){
+						element.variableType.add(e.getReturnType());
+						element.packageImport = convertClasstoPackage2(((element.variableType).get(0)).replace(" ",""));	
+						System.out.println(element.name + " , " + element.variableType + " , " + element.packageImport);
+					}
 				}
 				else if(element.name.equals(e.getVariableName())==true && (e.getReturnType().equals("confused")==true) && (e.getReturnType().equals("unresolved") ==false)){
 					element.variableType=e.getReturnTypeList();
 					//element.packageImport = convertClasstoPackage2(((element.variableType).get(0)).replace(" ",""));	
-					//System.out.println(element.name + " , " + element.variableType + " , " + element.packageImport);
+					System.out.println(element.name + " , " + element.variableType + " , " + element.packageImport);
 				}
 			}
 		}
@@ -1287,7 +1279,8 @@ public class Test2 {
 											for(Variables tempElement: undeclaredVariables){
 												if(tempElement.name.equals(name.toString())==true){
 													String temp = (e.getArgumentList().get(similarity.indexOf(Collections.max(similarity))));
-													tempElement.variableType.add(temp.replace(" ", "").split("\\,")[counter-1]);
+													if(tempElement.variableType.contains(temp.replace(" ", "").split("\\,")[counter-1])== false)
+														tempElement.variableType.add(temp.replace(" ", "").split("\\,")[counter-1]);
 												}
 											}
 										}
@@ -1560,17 +1553,17 @@ public class Test2 {
 		undeclaredVariables = fillUndeclaredVariablesFromBaker(data,undeclaredVariables);
 		undeclaredVariables = mergeExpressionCollector(returnValue,undeclaredVariables,source);
 		
-//		for(Variables element:undeclaredVariables){
-//			System.out.println("-----------------###AfterMergeExpressionCollector###----------------");
-//			System.out.println(element.name);
-//			System.out.println(element.type);
-//			System.out.println(element.variableType);
-//			System.out.println(element.packageImport);
-//			//			System.out.println(element.returnType);	
-//			//			System.out.println(element.lineNumber);
-//			System.out.println(element.lineNumber);
-//			//			System.out.println("------------------------------------");
-//		}
+		for(Variables element:undeclaredVariables){
+			System.out.println("-----------------###AfterMergeExpressionCollector###----------------");
+			System.out.println(element.name);
+			System.out.println(element.type);
+			System.out.println(element.variableType);
+			System.out.println(element.packageImport);
+			//			System.out.println(element.returnType);	
+			//			System.out.println(element.lineNumber);
+			System.out.println(element.lineNumber);
+			//			System.out.println("------------------------------------");
+		}
 		
 		undeclaredVariables = getInformationFromParameter(returnValue,undeclaredVariables,source);
 		undeclaredVariables = fillLineNumber(undeclaredVariables, source);
@@ -1601,6 +1594,7 @@ public class Test2 {
 				String methodName = getVariablesInScope(source, element.name);
 				declaredVariables = getVariablesAndImport(source,methodName );
 				declaredVariables = fillLineNumber(declaredVariables, source);
+				//declaredVariables.stream().forEach(a->System.out.println(a.name));
 				if(element.variableType.size()==1){
 					for(Variables e:declaredVariables)
 						if((e.variableType.get(0).replace(" ", "")).equals((element.variableType.get(0)).replace(" ", "")) == true){
@@ -2041,7 +2035,35 @@ public class Test2 {
 		});
 		return ImportStatements;
 	}
-
+	static void TestX(){
+		String source=null;
+		DataCollector data = null;
+		try {
+			source = readFile("Snippet.txt");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		String methodName = getVariablesInScope(source, "dbPassword");
+		getVariablesAndImport(source,methodName ).stream().forEach(a->System.out.println(a.variableType));;
+		
+//		final CompilationUnit root = parseStatementsCompilationUnit(source);
+//		if(root == null)
+//			System.out.println("Something is wrong!!");
+//		root.accept(new ASTVisitor() {
+//			public boolean visit(Assignment node) {
+//				System.out.println("findLeftNodeType >>>>>>>>>> :: " + node.toString());
+//				if(node.getRightHandSide().resolveConstantExpressionValue() != null){
+//					System.out.println("vivek" + node.getRightHandSide().resolveTypeBinding().getTypeDeclaration().getQualifiedName());
+//					//returnValue.add(new ExpressionCollector(node.toString(),node.getLeftHandSide().toString(), node.getRightHandSide().resolveConstantExpressionValue().),"NA"));
+//				}
+//				return false;
+//			}
+//		});
+		
+		
+	}
 	public static void main(String args[]) throws InterruptedException, IOException{
 
 		//checkVariableDeclaration();
@@ -2066,6 +2088,7 @@ public class Test2 {
 		//		}
 		//Test16();
 		Test5();
+		//TestX();
 		//		convertClasstoPackage2("java.sql.Connection");
 	}
 

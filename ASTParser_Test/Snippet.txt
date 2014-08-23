@@ -1,20 +1,16 @@
-package com.machinemode.imspire.domain;
+ import java.util.ArrayList; import java.util.List;
 
-public class Request
-{
-    private Request()
-    {
-    }
+class abc{
 
-    public static String buildRequest(String uri, String api_key, String format,
-            RequestParams params)
-    {
-        StringBuilder stringBuilder = new StringBuilder();
-		b.append(string1);
-		b.append(string2);
-		string1 = b.toString();
+public void test(){
 
-
-        return stringBuilder.toString();
-    }
-}
+Properties props = new Properties();
+props.load(fs);
+String url = props.getProperty("db.url");
+String userName = props.getProperty("db.user");
+String password = props.getProperty("db.password");
+Class.forName(driverClass); 
+con=DriverManager.getConnection(url, userName, password);
+} 
+public void test2(){ 
+int a,b,c,d; } }
