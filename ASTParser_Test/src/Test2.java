@@ -1513,6 +1513,7 @@ public class Test2 {
 		System.out.println("Done!");
 		List<String> importStatements = getImportStatement(source);
 		List<ExpressionCollector>hints = extractHints(source);
+		List<String> printImportStatements = new ArrayList<String>();
 		List<ExpressionCollector>returnValue4 = findReturnStatements(source); //Return Values
 		System.out.println("=============================findReturnStatements=====================================================");
 		returnValue4.stream().forEach(p->p.printData());
@@ -1585,7 +1586,8 @@ public class Test2 {
 			System.out.println();
 		
 		for(Variables element:undeclaredVariables){
-
+			List<Variables> rankingList = new ArrayList<Variables>();
+			List<Variables> rankingTypeList = new ArrayList<Variables>();
 			if(element.type == "variable"){
 				int count=0;
 				System.out.println("#####################################");
@@ -1596,39 +1598,89 @@ public class Test2 {
 				declaredVariables = fillLineNumber(declaredVariables, source);
 				//declaredVariables.stream().forEach(a->System.out.println(a.name));
 				if(element.variableType.size()==1){
-					for(Variables e:declaredVariables)
+					for(Variables e:declaredVariables){
+						rankingTypeList.add(e);
 						if((e.variableType.get(0).replace(" ", "")).equals((element.variableType.get(0)).replace(" ", "")) == true){
-							System.out.println("Possible Options : (Which variables can be substituted)");
-							System.out.println("------------------------------------");
-							System.out.println(e.name);
-							//					System.out.println(element.type);
-							System.out.println(e.variableType);
-							//					System.out.println(element.packageImport);
-							//					System.out.println(element.returnType);	
-							//					System.out.println(element.lineNumber);
-							System.out.println(e.lineNumber);
-							//					System.out.println("------------------------------------");
+							rankingList.add(e);
+//							System.out.println("Possible Options : (Which variables can be substituted)");
+//							System.out.println("------------------------------------");
+//							System.out.println(e.name);
+//							//					System.out.println(element.type);
+//							System.out.println(e.variableType);
+//							//					System.out.println(element.packageImport);
+//							//					System.out.println(element.returnType);	
+//							//					System.out.println(element.lineNumber);
+//							System.out.println(e.lineNumber);
+//							//					System.out.println("------------------------------------");
 							count++;
 						}
+					}
 					if(count==0)
 						System.out.println("Variable " + element.name +" needs declaration of type " + element.variableType );
+					else{
+						SelectionAlgorithm sEditDistance = new SelectionAlgorithm(element, rankingList);
+//						System.out.println("Selection Algorithm >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+//						System.out.println("The element to be replaced is : " + element.name);
+//						System.out.println("The replacement elements are :: ");
+//						(sEditDistance.editDistance()).stream().forEach(a->System.out.println(a.candidateDeclaredVariable));
+						List<RankingSkeleton> editDistance = sEditDistance.editDistance();
+//						System.out.println(">>>>>>>>>>>>>>>>>>>>.>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+						SelectionAlgorithm sSemanticDistance = new SelectionAlgorithm(element, rankingList);
+//						System.out.println("Selection Algorithm >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+//						System.out.println("The element to be replaced is : " + element.name);
+//						System.out.println("The replacement elements are :: ");
+//						(sSemanticDistance.semanticDistance()).stream().forEach(a->System.out.println(a.candidateDeclaredVariable));
+						List<RankingSkeleton> semanticDistance = sSemanticDistance.semanticDistance();
+//						System.out.println(">>>>>>>>>>>>>>>>>>>>.>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+						SelectionAlgorithm sNavigationDistance = new SelectionAlgorithm(element, rankingList);
+//						System.out.println("Selection Algorithm >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+//						System.out.println("The element to be replaced is : " + element.name);
+//						System.out.println("The replacement elements are :: ");
+//						(sNavigationDistance.navigationDistance()).stream().forEach(a->System.out.println(a.candidateDeclaredVariable));
+						List<RankingSkeleton> navigationDistance = sNavigationDistance.navigationDistance();
+//						System.out.println(">>>>>>>>>>>>>>>>>>>>.>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+						SelectionAlgorithm sTypeDistance = new SelectionAlgorithm(element, rankingTypeList);
+//						System.out.println("Selection Algorithm >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+//						System.out.println("The element to be replaced is : " + element.name);
+//						System.out.println("The replacement elements are :: ");
+//						(sTypeDistance.typeDistance()).stream().forEach(a->System.out.println(a.candidateDeclaredVariable));
+						List<RankingSkeleton> typeDistance = sTypeDistance.typeDistance();
+//						System.out.println(">>>>>>>>>>>>>>>>>>>>.>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+						Object[][] table = list2Table(editDistance,semanticDistance,navigationDistance,typeDistance);
+						for (final Object[] row : table) {
+						    System.out.format("%25s%25s%25s%25s%25s\n", row);
+						}
+					}
+						
 				}
 				else
 					System.out.println("Variable " + element.name +" could not be resolved" );
 			}
 			else if(element.type == "type" && element.packageImport != "" && element.packageImport != "NA" ){
-				System.out.println("#####################################");
+				//System.out.println("#####################################");
 				if(importStatements.contains(element.packageImport) == false)
-					System.out.println("Add Imports : " +element.packageImport + " "+element.name);
+					printImportStatements.add("Add Imports : " +element.packageImport + " "+element.name);
 			}
 			else if(element.type == "type")
 				System.out.println("Type " + element.name + " could not be resolved");
 		}
 		System.out.println("#####################################");
+		System.out.println("Add following imports");
+		for(String element:printImportStatements)
+			System.out.println(element);
+		System.out.println("#####################################");
 		System.out.println("Consider the following hints");
 		for(ExpressionCollector element:hints){
 			System.out.println(element.getConstantExpression() + " might need to be changed in the expression " + element.getExpression());
 		}
+	}
+	
+	private static String[][] list2Table(List<RankingSkeleton> editDistance, List<RankingSkeleton> semanticDistance, List<RankingSkeleton> navigationDistance, List<RankingSkeleton> typeDistance){
+		 Object[][] table = new String[editDistance.size()+1][];
+		 table[0]=new String[]{"Rank","NavigationDistance","StringEditDistance","SemanticDistance","TypeDistance"};
+		 for(int i=0;i<(editDistance.size());i++)
+				 table[i+1] = new String[]{String.valueOf(i+1),navigationDistance.get(i).candidateDeclaredVariable,editDistance.get(i).candidateDeclaredVariable,semanticDistance.get(i).candidateDeclaredVariable,typeDistance.get(i).candidateDeclaredVariable};
+		 return (String[][]) table;
 	}
 	private static List<ExpressionCollector> findReturnStatements(String tempString) {
 		final CompilationUnit root = parseStatementsCompilationUnit(tempString);
@@ -2036,31 +2088,9 @@ public class Test2 {
 		return ImportStatements;
 	}
 	static void TestX(){
-		String source=null;
-		DataCollector data = null;
-		try {
-			source = readFile("Snippet.txt");
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+
+
 		
-		String methodName = getVariablesInScope(source, "dbPassword");
-		getVariablesAndImport(source,methodName ).stream().forEach(a->System.out.println(a.variableType));;
-		
-//		final CompilationUnit root = parseStatementsCompilationUnit(source);
-//		if(root == null)
-//			System.out.println("Something is wrong!!");
-//		root.accept(new ASTVisitor() {
-//			public boolean visit(Assignment node) {
-//				System.out.println("findLeftNodeType >>>>>>>>>> :: " + node.toString());
-//				if(node.getRightHandSide().resolveConstantExpressionValue() != null){
-//					System.out.println("vivek" + node.getRightHandSide().resolveTypeBinding().getTypeDeclaration().getQualifiedName());
-//					//returnValue.add(new ExpressionCollector(node.toString(),node.getLeftHandSide().toString(), node.getRightHandSide().resolveConstantExpressionValue().),"NA"));
-//				}
-//				return false;
-//			}
-//		});
 		
 		
 	}

@@ -72,5 +72,11 @@
 	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/org.eclipse.jdt.core_3.5.2.v_981_R35x.jar"/>
 	<classpathentry kind="lib" path="/home/vivek/eclipse/lib/org.eclipse.osgi_3.5.2.R35x_v20100126.jar"/>
 	<classpathentry kind="lib" path="/home/vivek/eclipse_rcp/org.eclipse.text_3.5.0.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/Downloads/simmetrics_jar_v1_6_2_d07_02_07.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/Downloads/wordnet_week9/WordNetRiTa/core.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/Downloads/wordnet_week9/WordNetRiTa/ritaWN.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/Downloads/wordnet_week9/WordNetRiTa/supportWN.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/Downloads/asm-5.0_BETA.jar"/>
+	<classpathentry kind="lib" path="/home/vivek/Downloads/asm-commons-5.0_BETA.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
